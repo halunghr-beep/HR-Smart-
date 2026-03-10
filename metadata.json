@@ -1,0 +1,5 @@
+{
+  "name": "Smart-HR",
+  "description": "HR management application for leave requests and administrative documents.",
+  "requestFramePermissions": []
+}
