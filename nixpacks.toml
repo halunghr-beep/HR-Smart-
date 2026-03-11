@@ -12,4 +12,6 @@ cmds = ["npx vite build"]
 
 [start]
 cmd = "NODE_ENV=production npx tsx server.ts" 
+
+
  
