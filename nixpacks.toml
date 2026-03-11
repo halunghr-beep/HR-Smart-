@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "python3", "gcc", "gnumake"]
+
+[phases.install]
+cmds = ["npm install --legacy-peer-deps"]
+
+[phases.build]
+cmds = ["npx vite build"]
+
+[start]
+cmd = "NODE_ENV=production npx tsx server.ts"
