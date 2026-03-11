@@ -4,11 +4,11 @@ nixPkgs = ["nodejs_20", "python3", "gcc", "gnumake"]
 [phases.install]
 cmds = [
   "npm install --legacy-peer-deps --include=dev",
-  "npm install @rollup/rollup-linux-x64-gnu --legacy-peer-deps --no-save"  
+  "npm install @rollup/rollup-linux-x64-gnu --legacy-peer-deps --no-save"
 ]
 
 [phases.build]
 cmds = ["npx vite build"]
 
 [start]
-cmd = "NODE_ENV=production npx tsx server.ts" 
+cmd = "NODE_ENV=production node --max-old-space-size=512 node_modules/.bin/tsx server.ts"
