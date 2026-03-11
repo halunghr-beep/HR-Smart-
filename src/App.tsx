@@ -644,20 +644,9 @@ export default function App() {
         >
           <div className="text-center mb-8">
             <div className="mb-4 flex justify-center">
-              <img 
-                src="" 
-                alt="Halung Technics Tunisie" 
-                className="h-20 w-auto object-contain"
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  e.currentTarget.parentElement!.innerHTML = `
-                    <div class="flex flex-col items-center gap-2">
-                      <div class="w-16 h-16 bg-[#0056b3] rounded-full flex items-center justify-center shadow-lg shadow-blue-200">
-                        <span class="text-white text-3xl font-bold italic">S</span>
-                      </div>
-                      <span class="text-[#0056b3] font-bold text-xl">Smart-HR</span>
-                    </div>
+              <div className="w-16 h-16 bg-[#0056b3] rounded-full flex items-center justify-center shadow-lg shadow-blue-200">
+  <span className="text-white text-3xl font-bold italic">S</span>
+</div>
                   `;
                 }}
               />
