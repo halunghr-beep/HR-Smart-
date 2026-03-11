@@ -645,7 +645,7 @@ export default function App() {
           <div className="text-center mb-8">
             <div className="mb-4 flex justify-center">
               <img 
-                src="/logo.png" 
+                src="" 
                 alt="Halung Technics Tunisie" 
                 className="h-20 w-auto object-contain"
                 referrerPolicy="no-referrer"
