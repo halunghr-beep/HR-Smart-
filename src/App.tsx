@@ -646,8 +646,9 @@ export default function App() {
             <div className="mb-4 flex justify-center">
               <img 
                 src="/logo.png" 
-                alt="Halung Technics Tunisie" 
-                className="h-20 w-auto object-contain"
+<div className="w-16 h-16 bg-[#0056b3] rounded-full flex items-center justify-center shadow-lg shadow-blue-200">
+  <span className="text-white text-3xl font-bold italic">S</span>
+</div>                className="h-20 w-auto object-contain"
                 referrerPolicy="no-referrer"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
