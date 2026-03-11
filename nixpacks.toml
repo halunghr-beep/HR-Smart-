@@ -3,7 +3,7 @@ nixPkgs = ["nodejs_20", "python3", "gcc", "gnumake"]
 
 [phases.install]
 cmds = [
-  "npm install --legacy-peer-deps",
+  "npm install --legacy-peer-deps --include=dev",
   "npm install @rollup/rollup-linux-x64-gnu --legacy-peer-deps --no-save"
 ]
 
