@@ -640,16 +640,12 @@ export default function App() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100"
-        >
+          className="max-w-md w-full bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100">
           <div className="text-center mb-8">
             <div className="mb-4 flex justify-center">
               <div className="w-16 h-16 bg-[#0056b3] rounded-full flex items-center justify-center shadow-lg shadow-blue-200">
   <span className="text-white text-3xl font-bold italic">S</span>
-</div>
-                  `;
-                }}
-              />
+</div> 
             </div>
             <p className="text-slate-500 mt-2">Halung Technics Tunisie</p>
           </div>
