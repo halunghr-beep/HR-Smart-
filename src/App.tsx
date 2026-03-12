@@ -198,6 +198,8 @@ export default function App() {
     type: 'work_attestation' as AdminDocumentRequest['type'],
     purpose: 'CIN' as AdminDocumentRequest['purpose'],
     targetManagerId: '',
+    project: '',
+    departmentId: '',
   });
 
   // User Form State
