@@ -2776,7 +2776,115 @@ export default function App() {
             </motion.div>
           </div>
         )}
-
+{selectedUserForEdit && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => setSelectedUserForEdit(null)}
+      className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+    />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95, y: 20 }}
+      className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden"
+    >
+      <div className="p-8">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-bold text-slate-900">Edit User</h3>
+          <button onClick={() => setSelectedUserForEdit(null)} className="p-2 rounded-full hover:bg-slate-100 text-slate-400">
+            <XCircle className="w-6 h-6" />
+          </button>
+        </div>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Full Name</label>
+              <input type="text" value={editUserForm.name || ''} onChange={e => setEditUserForm((p:any) => ({...p, name: e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Email</label>
+              <input type="email" value={editUserForm.email || ''} onChange={e => setEditUserForm((p:any) => ({...p, email: e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Employee ID</label>
+              <input type="text" value={editUserForm.matricule || ''} onChange={e => setEditUserForm((p:any) => ({...p, matricule: e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Password</label>
+              <input type="text" value={editUserForm.password || ''} onChange={e => setEditUserForm((p:any) => ({...p, password: e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Role</label>
+              <select value={editUserForm.role || ''} onChange={e => setEditUserForm((p:any) => ({...p, role: e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500">
+                <option value="superior">Superior</option>
+                <option value="manager">Manager</option>
+                <option value="hr">HR</option>
+                <option value="ceo">CEO</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Department</label>
+              <select value={editUserForm.department_id || ''} onChange={e => setEditUserForm((p:any) => ({...p, department_id: e.target.value}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500">
+                <option value="">None</option>
+                {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-1">Leave Balance</label>
+              <input type="number" value={editUserForm.balance || 0} onChange={e => setEditUserForm((p:any) => ({...p, balance: parseInt(e.target.value)}))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div className="flex flex-col gap-2 justify-center">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={!!editUserForm.can_request} onChange={e => setEditUserForm((p:any) => ({...p, can_request: e.target.checked ? 1 : 0}))} className="w-4 h-4 rounded" />
+                <span className="text-sm font-medium text-slate-700">Can request leave</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={!!editUserForm.direct_to_ceo} onChange={e => setEditUserForm((p:any) => ({...p, direct_to_ceo: e.target.checked ? 1 : 0}))} className="w-4 h-4 rounded" />
+                <span className="text-sm font-medium text-slate-700">Direct to CEO</span>
+              </label>
+            </div>
+          </div>
+          <div className="flex gap-3 pt-4">
+            <button onClick={() => setSelectedUserForEdit(null)} className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50">Cancel</button>
+            <button
+              onClick={async () => {
+                await fetch(`/api/users/${selectedUserForEdit.id}`, {
+                  method: 'PATCH',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({
+                    name: editUserForm.name,
+                    email: editUserForm.email,
+                    password: editUserForm.password,
+                    matricule: editUserForm.matricule,
+                    role: editUserForm.role,
+                    departmentId: editUserForm.department_id,
+                    postId: editUserForm.post_id,
+                    balance: editUserForm.balance,
+                    canRequest: editUserForm.can_request,
+                    directToCeo: editUserForm.direct_to_ceo,
+                  })
+                });
+                setSelectedUserForEdit(null);
+                const res = await fetch(`/api/users`);
+                setAvailableUsers(await res.json());
+              }}
+              className="flex-[2] bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700"
+            >Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  </div>
+)}
         {selectedUserForHistory && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div 
