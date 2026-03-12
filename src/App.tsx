@@ -2040,15 +2040,22 @@ export default function App() {
                             {user.direct_to_ceo ? 'Yes' : 'No'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <button 
-                            onClick={() => setSelectedUserForHistory(user)}
-                            className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
-                            title="View history"
-                          >
-                            <Clock className="w-4 h-4" />
-                          </button>
-                        </td>
+                        <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
+  <button
+    onClick={() => setSelectedUserForEdit(user)}
+    className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-emerald-600 transition-all"
+    title="Edit user"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  </button>
+  <button
+    onClick={() => setSelectedUserForHistory(user)}
+    className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
+    title="View history"
+  >
+    <Clock className="w-4 h-4" />
+  </button>
+</td>
                       </tr>
                     ))}
                   </tbody>
