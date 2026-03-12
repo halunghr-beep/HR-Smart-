@@ -91,7 +91,7 @@ interface LeaveRequest {
 
 const LEAVE_TYPES = {
   paid: { label: 'Paid Leave', color: 'bg-blue-100 text-blue-700' },
-  sick: { label: 'Sick Leave', color: 'bg-red-100 text-red-700' },
+  sick: { label: 'Breastfeeding Leave', color: 'bg-red-100 text-red-700' },
   unpaid: { label: 'Unpaid Leave', color: 'bg-gray-100 text-gray-700' },
   other: { label: 'Other', color: 'bg-purple-100 text-purple-700' },
 };
