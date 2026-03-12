@@ -2112,7 +2112,33 @@ export default function App() {
                       />
                     </div>
                   </div>
-
+{currentUser?.role === 'hr' && (
+  <div className="grid grid-cols-2 gap-4">
+    <div>
+      <label className="block text-sm font-bold text-slate-700 mb-2">Department</label>
+      <select
+        value={formData.departmentId}
+        onChange={e => setFormData(prev => ({ ...prev, departmentId: e.target.value }))}
+        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+      >
+        <option value="">Select department</option>
+        {departments.map(d => (
+          <option key={d.id} value={d.id}>{d.name}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label className="block text-sm font-bold text-slate-700 mb-2">Project</label>
+      <input
+        type="text"
+        value={formData.project}
+        onChange={e => setFormData(prev => ({ ...prev, project: e.target.value }))}
+        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+        placeholder="Ex: Project Alpha"
+      />
+    </div>
+  </div>
+)}
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-2">Leave Type</label>
                     <div className="grid grid-cols-2 gap-3">
