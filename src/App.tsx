@@ -2112,7 +2112,7 @@ export default function App() {
                       />
                     </div>
                   </div>
-{currentUser?.role === 'hr' && (
+{(currentUser?.role === 'hr' || currentUser?.role === 'superior' || currentUser?.role === 'manager') && (
   <div className="grid grid-cols-2 gap-4">
     <div>
       <label className="block text-sm font-bold text-slate-700 mb-2">Department</label>
