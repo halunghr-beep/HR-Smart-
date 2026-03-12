@@ -2044,7 +2044,7 @@ export default function App() {
                         </td>
                         <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
   <button
-    onClick={() => setSelectedUserForEdit(user)}
+    onClick={() => { setSelectedUserForEdit(user); setEditUserForm(user); }}
     className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-emerald-600 transition-all"
     title="Edit user"
   >
