@@ -234,21 +234,14 @@ db.exec(`
 `);
 
 // Seed initial data
-const depts = ["Informatique", "Marketing", "Finance", "Administratif"];
-depts.forEach(d => db.prepare("INSERT INTO departments (name) VALUES (?)").run(d));
+const deptCount = (db.prepare("SELECT COUNT(*) as c FROM departments").get() as any).c;
+if (deptCount === 0) {
+  const depts = ["Informatique", "Marketing", "Finance", "Administratif"];
+  depts.forEach(d => db.prepare("INSERT INTO departments (name) VALUES (?)").run(d));
 
-// IT Dept
-db.prepare("INSERT INTO users (name, email, password, matricule, role, department_id, balance) VALUES (?, ?, ?, ?, ?, ?, ?)").run("Sami Superior", "sami@it.com", "sami123", "2024-001", "superior", 1, 25);
-db.prepare("INSERT INTO users (name, email, password, matricule, role, department_id, balance) VALUES (?, ?, ?, ?, ?, ?, ?)").run("Karim Manager", "karim@it.com", "karim123", "2024-002", "manager", 1, 25);
-
-// Marketing Dept
-db.prepare("INSERT INTO users (name, email, password, matricule, role, department_id, balance) VALUES (?, ?, ?, ?, ?, ?, ?)").run("Leila Superior", "leila@mkt.com", "leila123", "2024-003", "superior", 2, 25);
-
-// HR (Global)
-db.prepare("INSERT INTO users (name, email, password, matricule, role, department_id, balance) VALUES (?, ?, ?, ?, ?, ?, ?)").run("Marie RH", "marie@rh.com", "marie123", "2024-004", "hr", null, 30);
-
-// CEO
-db.prepare("INSERT INTO users (name, email, password, matricule, role, department_id, balance) VALUES (?, ?, ?, ?, ?, ?, ?)").run("Michael Ahalung", "michael@halung.com", "michael123", "CEO-001", "ceo", 4, 30);
+  db.prepare("INSERT INTO users (name, email, password, matricule, role, department_id, balance) VALUES (?, ?, ?, ?, ?, ?, ?)").run("Firas Chebbi", "firas.chebbi@halung.com", "1991", "1182", "hr", null, 30);
+  db.prepare("INSERT INTO users (name, email, password, matricule, role, department_id, balance) VALUES (?, ?, ?, ?, ?, ?, ?)").run("Michael Ahalung", "michael@halung.com", "michael123", "CEO-001", "ceo", 4, 30);
+}
 
 async function startServer() {
   const app = express();
