@@ -176,6 +176,8 @@ export default function App() {
   const [showNewPostModal, setShowNewPostModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<LeaveRequest | null>(null);
   const [selectedUserForHistory, setSelectedUserForHistory] = useState<User | null>(null);
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState<User | null>(null);
+  const [editUserForm, setEditUserForm] = useState<any>({});
   const [socket, setSocket] = useState<Socket | null>(null);
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
