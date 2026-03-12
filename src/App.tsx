@@ -866,7 +866,7 @@ export default function App() {
             </h2>
           </div>
           <div className="flex items-center gap-4">
-            {currentUser.role === 'superior' && activeTab === 'dashboard' && (
+            {(currentUser?.role === 'superior' || currentUser?.direct_to_ceo === 1) && activeTab === 'dashboard' && (
               <button 
                 onClick={() => setShowNewRequestModal(true)}
                 className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all"
@@ -875,7 +875,7 @@ export default function App() {
                 Create Request
               </button>
             )}
-            {currentUser.role === 'superior' && activeTab === 'documents' && (
+            {(currentUser?.role === 'superior' || currentUser?.direct_to_ceo === 1) && activeTab === 'documents' && (
               <button 
                 onClick={() => setShowNewDocModal(true)}
                 className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center gap-2 hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all"
