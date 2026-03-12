@@ -171,13 +171,6 @@ db.exec(`
   );
 `);
 
-  CREATE TABLE posts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT UNIQUE NOT NULL,
-    department_id INTEGER,
-    FOREIGN KEY (department_id) REFERENCES departments(id)
-  );
-
   CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
