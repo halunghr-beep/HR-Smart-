@@ -542,9 +542,11 @@ async function startServer() {
       const creator = db.prepare("SELECT role, department_id FROM users WHERE id = ?").get(creatorId) as any;
       
       let initialStatus = 'pending_manager';
-      if (creator.role === 'manager') {
-        initialStatus = 'pending_hr';
-      }
+if (creator.direct_to_ceo === 1) {
+  initialStatus = 'pending_ceo';
+} else if (creator.role === 'manager') {
+  initialStatus = 'pending_hr';
+}
 
       const result = db.prepare(`
         INSERT INTO admin_document_requests (
