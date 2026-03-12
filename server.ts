@@ -104,15 +104,72 @@ cron.schedule('0 * * * *', checkPendingReminders);
 
 // Force schema reset for development to ensure all columns exist
 db.exec(`
-  DROP TABLE IF EXISTS leave_requests;
-  DROP TABLE IF EXISTS users;
-  DROP TABLE IF EXISTS departments;
-  DROP TABLE IF EXISTS posts;
-
-  CREATE TABLE departments (
+  CREATE TABLE IF NOT EXISTS departments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT UNIQUE NOT NULL,
+    department_id INTEGER,
+    FOREIGN KEY (department_id) REFERENCES departments(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    matricule TEXT UNIQUE,
+    role TEXT DEFAULT 'superior',
+    department_id INTEGER,
+    post_id INTEGER,
+    balance INTEGER DEFAULT 25,
+    can_request INTEGER DEFAULT 1,
+    direct_to_ceo INTEGER DEFAULT 0,
+    FOREIGN KEY (department_id) REFERENCES departments(id),
+    FOREIGN KEY (post_id) REFERENCES posts(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS leave_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_name TEXT NOT NULL,
+    employee_matricule TEXT NOT NULL,
+    department_id INTEGER NOT NULL,
+    created_by_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    days INTEGER NOT NULL,
+    reason TEXT,
+    status TEXT DEFAULT 'pending_manager',
+    target_manager_id INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    manager_approved_at DATETIME,
+    ceo_approved_at DATETIME,
+    hr_treated_at DATETIME,
+    FOREIGN KEY (department_id) REFERENCES departments(id),
+    FOREIGN KEY (created_by_id) REFERENCES users(id)
+  );
+
+  CREATE TABLE IF NOT EXISTS admin_document_requests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    employee_name TEXT NOT NULL,
+    employee_matricule TEXT NOT NULL,
+    department_id INTEGER NOT NULL,
+    created_by_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    purpose TEXT NOT NULL,
+    status TEXT DEFAULT 'pending_manager',
+    target_manager_id INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    manager_approved_at DATETIME,
+    hr_treated_at DATETIME,
+    FOREIGN KEY (department_id) REFERENCES departments(id),
+    FOREIGN KEY (created_by_id) REFERENCES users(id)
+  );
+`);
 
   CREATE TABLE posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
