@@ -703,5 +703,10 @@ async function startServer() {
     console.log(`Server running on http://0.0.0.0:${PORT}`);
   });
 }
-
+setInterval(async () => {
+  try {
+    await fetch('https://hr-smart.onrender.com/');
+    console.log('Keep-alive ping');
+  } catch(e) {}
+}, 10 * 60 * 1000);
 startServer();
