@@ -394,6 +394,7 @@ export default function App() {
           days: diffDays,
           reason: formData.reason,
           targetManagerId: formData.targetManagerId ? parseInt(formData.targetManagerId) : null,
+directToCeo: currentUser.direct_to_ceo,
         }),
       });
       if (res.ok) {
