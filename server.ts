@@ -366,7 +366,7 @@ async function startServer() {
       const { employeeName, employeeMatricule, departmentId, creatorId, type, startDate, endDate, days, reason, targetManagerId } = req.body;
       
       const creator = db.prepare("SELECT role, department_id, direct_to_ceo FROM users WHERE id = ?").get(creatorId) as any;
-      llet initialStatus = 'pending_manager';
+      let initialStatus = 'pending_manager';
 if (creator.direct_to_ceo === 1) {
   initialStatus = 'pending_ceo';
 } else if (creator.role === 'manager') {
