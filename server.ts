@@ -367,7 +367,7 @@ async function startServer() {
       
       const creator = db.prepare("SELECT role, department_id, direct_to_ceo FROM users WHERE id = ?").get(creatorId) as any;
       let initialStatus = 'pending_manager';
-if (creator.direct_to_ceo === 1) {
+if (creator.direct_to_ceo === 1 || creator.role === 'hr') {
   initialStatus = 'pending_ceo';
 } else if (creator.role === 'manager') {
   initialStatus = 'pending_hr';
