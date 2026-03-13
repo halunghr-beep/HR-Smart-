@@ -365,10 +365,13 @@ async function startServer() {
     try {
       const { employeeName, employeeMatricule, departmentId, creatorId, type, startDate, endDate, days, reason, targetManagerId } = req.body;
       
-      const creator = db.prepare("SELECT role, department_id FROM users WHERE id = ?").get(creatorId) as any;
-      let initialStatus = 'pending_manager';
-      if (creator.role === 'manager') initialStatus = 'pending_hr';
-      else if (creator.direct_to_ceo) initialStatus = 'pending_ceo';
+      const creator = db.prepare("SELECT role, department_id, direct_to_ceo FROM users WHERE id = ?").get(creatorId) as any;
+      llet initialStatus = 'pending_manager';
+if (creator.direct_to_ceo === 1) {
+  initialStatus = 'pending_ceo';
+} else if (creator.role === 'manager') {
+  initialStatus = 'pending_hr';
+}
 
       const result = db.prepare(`
         INSERT INTO leave_requests (employee_name, employee_matricule, department_id, created_by_id, type, start_date, end_date, days, reason, status, target_manager_id, created_at)
