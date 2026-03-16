@@ -1977,7 +1977,7 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
     className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-rose-600 transition-all"
     title="Delete department"
   >
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <polyline points="3 6 5 6 21 6"/>
       <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
       <path d="M10 11v6"/>
@@ -1986,6 +1986,7 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
     </svg>
   </button>
 </td>
+   </tr>
                     </tbody>
                   </table>
                 </div>
