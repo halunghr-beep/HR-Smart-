@@ -1944,9 +1944,8 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
   </td>
   <td className="px-6 py-4 text-right">
     <button
-      onClick={async () => {
-        if (window.confirm(`Delete "${dept.name}"?`)) {
-         await fetch('/api/departments/' + dept.id, { method: 'DELETE' });
+      if (window.confirm('Delete this department?')) {
+        await fetch('/api/departments/' + dept.id, { method: 'DELETE' });
           setDepartments(prev => prev.filter(d => d.id !== dept.id));
         }
       }}
