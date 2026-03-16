@@ -1943,8 +1943,8 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
     <p className="text-slate-900 font-semibold text-sm">{dept.name}</p>
   </td>
   <td className="px-6 py-4 text-right">
-    <button
-  onClick={async () => {
+   <button
+  onClick={() => {
     const newName = window.prompt('Rename department:', dept.name);
     if (newName && newName.trim()) {
       fetch('/api/departments/' + dept.id, {
