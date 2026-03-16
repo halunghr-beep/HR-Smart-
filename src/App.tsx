@@ -1986,7 +1986,6 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
     </svg>
   </button>
 </td>
-   </tr>
                     </tbody>
                   </table>
                 </div>
