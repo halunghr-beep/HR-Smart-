@@ -1955,7 +1955,6 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
         setDepartments(prev => prev.map(d => d.id === dept.id ? {...d, name: newName.trim()} : d));
       });
     }
-  }}
  <td className="flex gap-2">
   <button
     onClick={() => handleEdit(dept)}
