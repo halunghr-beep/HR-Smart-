@@ -1950,6 +1950,24 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
           setDepartments(prev => prev.filter(d => d.id !== dept.id));
         }
       }}
+      <button
+  onClick={() => {
+    const newName = window.prompt(`Rename "${dept.name}":`, dept.name);
+    if (newName && newName.trim()) {
+      fetch(`/api/departments/${dept.id}`, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name: newName.trim() })
+      }).then(() => {
+        setDepartments(prev => prev.map(d => d.id === dept.id ? {...d, name: newName.trim()} : d));
+      });
+    }
+  }}
+  className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-emerald-600 transition-all"
+  title="Edit department"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+</button>
       className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-rose-600 transition-all"
       title="Delete department"
     >
