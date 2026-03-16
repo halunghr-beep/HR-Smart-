@@ -1956,8 +1956,8 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
       });
     }
   }}
- <td className="flex gap-2">
-  <button
+ <td> className="flex gap-2">
+  <button>
     onClick={() => handleEdit(dept)}
     className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-emerald-600 transition-all"
     title="Edit department"
