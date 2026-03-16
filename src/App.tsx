@@ -1954,7 +1954,7 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
   onClick={() => {
     const newName = window.prompt('Rename department:', dept.name);
     if (newName && newName.trim()) {
-      fetch(`/api/departments/${dept.id}`, {
+      fetch('/api/departments/' + dept.id, {
         method: 'PATCH',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ name: newName.trim() })
