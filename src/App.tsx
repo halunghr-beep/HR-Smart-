@@ -2403,6 +2403,8 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
                         Bank Credit
                       </button>
                     </div>
+                    </div>
+                  
                  {currentUser && currentUser.role !== 'manager' && currentUser.direct_to_ceo !== 1 && (
                     <div>
                       <label className="block text-sm font-bold text-slate-700 mb-2">Approving Manager</label>
