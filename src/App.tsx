@@ -380,7 +380,7 @@ export default function App() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
     try {
-      const res = await fetch('/api/requests', {
+      const res = await fetch('/api/leave-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
