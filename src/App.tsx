@@ -232,7 +232,6 @@ export default function App() {
       }
     });
 
-
     newSocket.on('leave_request_created', (newRequest: LeaveRequest) => {
       setRequests(prev => [newRequest, ...prev]);
       if (currentUser?.role === 'hr') {
