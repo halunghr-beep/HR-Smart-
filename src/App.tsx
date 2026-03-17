@@ -224,16 +224,14 @@ export default function App() {
     const newSocket = io();
     setSocket(newSocket);
 
-    newSocket.on('leave_request_updated', ({ request, user }: { request: LeaveRequest, user?: User }) => {
-      setRequests(prev => prev.map(r => r.id === request.id ? request : r));
-      if (currentUser && user && user.id === currentUser.id) {
-        setCurrentUser(user);
-      }
+    newSocket.on('leave_request_updated', (updatedRequest: LeaveRequest) => {
+      setRequests(prev => prev.map(r => r.id === updatedRequest.id ? updatedRequest : r));
       if (currentUser?.role === 'hr') {
         fetchDeptStats();
         fetchUsers();
       }
     });
+
 
     newSocket.on('leave_request_created', (newRequest: LeaveRequest) => {
       setRequests(prev => [newRequest, ...prev]);
