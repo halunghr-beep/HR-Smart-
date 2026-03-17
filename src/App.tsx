@@ -522,7 +522,7 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
   const handleUpdateStatus = async (id: number, action: 'approve' | 'reject') => {
     if (!currentUser) return;
     try {
-      await fetch(`/api/requests/${id}`, {
+      await fetch(`/api/leave-requests/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action, role: currentUser.role, userId: currentUser.id }),
