@@ -2425,9 +2425,14 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
 
                   <div className="pt-4 flex gap-3">
                     <button 
-                      {currentUser && currentUser.role !== 'manager' && currentUser.direct_to_ceo !== 1 && (
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Approving Manager</label>
+                      type="button"
+                      onClick={() => setShowNewDocModal(false)}
+                      className="flex-1 px-6 py-4 rounded-xl font-bold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all uppercase tracking-widest text-xs"
+                    >
+                      Cancel
+                    </button>
+
+                  <div className="pt-4 flex gap-3">
                       <select
                         required
                         value={docFormData.targetManagerId}
