@@ -298,7 +298,7 @@ export default function App() {
 
   const fetchRequests = async (user: User) => {
     try {
-      const res = await fetch(`/api/requests?userId=${user.id}&role=${user.role}&departmentId=${user.department_id || ''}`);
+      const res = await fetch(`/api/leave-requests?userId=${user.id}&role=${user.role}&departmentId=${user.department_id || ''}`);
       const data = await res.json();
       setRequests(data);
       
