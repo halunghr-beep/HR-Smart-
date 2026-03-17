@@ -2407,6 +2407,25 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
 
                   <div className="pt-4 flex gap-3">
                     <button 
+                      {currentUser && currentUser.role !== 'manager' && currentUser.direct_to_ceo !== 1 && (
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Approving Manager</label>
+                      <select
+                        required
+                        value={docFormData.targetManagerId}
+                        onChange={e => setDocFormData(prev => ({ ...prev, targetManagerId: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                      >
+                        <option value="">Select a manager</option>
+                        {availableUsers
+                          .filter(u => u.role === 'manager')
+                          .map(m => (
+                            <option key={m.id} value={m.id}>{m.name} ({m.department_name || 'Global'})</option>
+                          ))
+                        }
+                      </select>
+                    </div>
+                  )}
                       type="button"
                       onClick={() => setShowNewDocModal(false)}
                       className="flex-1 px-6 py-4 rounded-xl font-bold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all uppercase tracking-widest text-xs"
