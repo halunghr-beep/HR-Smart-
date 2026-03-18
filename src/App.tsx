@@ -2446,7 +2446,7 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
           </div>
         )}
 
-                  <div className="pt-4 flex gap-3">
+                    <div className="pt-4 flex gap-3">
                     <button 
                       type="button"
                       onClick={() => setShowNewDocModal(false)}
@@ -2454,21 +2454,13 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
                     >
                       Cancel
                     </button>
-
-                  <div className="pt-4 flex gap-3">
-                      <select
-                        required
-                        value={docFormData.targetManagerId}
-                        onChange={e => setDocFormData(prev => ({ ...prev, targetManagerId: e.target.value }))}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                      >
-                        <option value="">Select a manager</option>
-                        {availableUsers
-                          .filter(u => u.role === 'manager')
-                          .map(m => (
-                            <option key={m.id} value={m.id}>{m.name} ({m.department_name || 'Global'})</option>
-                          ))
-                        }
+                    <button 
+                      type="submit"
+                      className="flex-1 px-6 py-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all uppercase tracking-widest text-xs"
+                    >
+                      Submit Request
+                    </button>
+                  </div>
                       </select>
                     </div>
                   )}
