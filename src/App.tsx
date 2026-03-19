@@ -2391,8 +2391,7 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
                       {availableUsers
                         .filter(u => u.role === 'manager' || u.role === 'superior')
                         .map(u => (
-                          <option key={u.id} value={u.id}>{u.name} — {u.department_name || 'Global'}</option>
-                        ))
+                       <option key={u.id} value={u.id}>{u.name} - {u.department_name || 'Global'}</option>                        ))
                       }
                     </select>
                   </div>
