@@ -1756,20 +1756,20 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
                                 <FileText className="w-5 h-5" />
                               </button>
                               {currentUser.role === 'hr' && (
-  <button
-    onClick={async (e) => {
-      e.stopPropagation();
-      if (window.confirm('Delete this request?')) {
-        await fetch('/api/leave-requests/' + req.id, { method: 'DELETE' });
-        setRequests(prev => prev.filter(r => r.id !== req.id));
-      }
-    }}
-    className="p-2 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
-    title="Delete request"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-  </button>
-)}
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm('Delete this request?')) {
+                                      await fetch('/api/leave-requests/' + req.id, { method: 'DELETE' });
+                                      setRequests(prev => prev.filter(r => r.id !== req.id));
+                                    }
+                                  }}
+                                  className="p-2 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                                  title="Delete request"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                </button>
+                              )}
                               {canApprove(req) && (
                                 <>
                                   <button 
@@ -2376,25 +2376,6 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
                         onChange={e => setDocFormData(prev => ({ ...prev, employeeMatricule: e.target.value }))}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                         placeholder="Ex: 2024-001"
-                        />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Approving Manager</label>
-                    <select
-                      value={docFormData.targetManagerId}
-                      onChange={e => setDocFormData(prev => ({ ...prev, targetManagerId: e.target.value }))}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                    >
-                      <option value="">Select a manager</option>
-                      {availableUsers
-                        .filter(u => u.role === 'manager' || u.role === 'superior')
-                        .map(u => (
-                       <option key={u.id} value={u.id}>{u.name} - {u.department_name || 'Global'}</option>                        ))
-                      }
-                    </select>
-                  </div>
                       />
                     </div>
                   </div>
@@ -2438,26 +2419,23 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
                       </button>
                     </div>
                     </div>
-                  
-                 {currentUser && currentUser.role !== 'manager' && currentUser.direct_to_ceo !== 1 && (
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Approving Manager</label>
-                      <select
-                        required
-                        value={docFormData.targetManagerId}
-                        onChange={e => setDocFormData(prev => ({ ...prev, targetManagerId: e.target.value }))}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                      >
-                        <option value="">Select a manager</option>
-                        {availableUsers
-                          .filter(u => u.role === 'manager')
-                          .map(m => (
-                            <option key={m.id} value={m.id}>{m.name} ({m.department_name || 'Global'})</option>
-                          ))
-                        }
-                      </select>
-                    </div>
-                  )}
+
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Approving Manager</label>
+                    <select
+                      value={docFormData.targetManagerId}
+                      onChange={e => setDocFormData(prev => ({ ...prev, targetManagerId: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                    >
+                      <option value="">Select a manager</option>
+                      {availableUsers
+                        .filter(u => u.role === 'manager' || u.role === 'superior')
+                        .map(u => (
+                          <option key={u.id} value={u.id}>{u.name} - {u.department_name || 'Global'}</option>
+                        ))
+                      }
+                    </select>
+                  </div>
 
                   <div className="pt-4 flex gap-3">
                     <button 
