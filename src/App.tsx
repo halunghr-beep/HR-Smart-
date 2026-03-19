@@ -2446,27 +2446,6 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
           </div>
         )}
 
-                    <div className="pt-4 flex gap-3">
-                    <button 
-                      type="button"
-                      onClick={() => setShowNewDocModal(false)}
-                      className="flex-1 px-6 py-4 rounded-xl font-bold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all uppercase tracking-widest text-xs"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      type="submit"
-                      className="flex-1 px-6 py-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all uppercase tracking-widest text-xs"
-                    >
-                      Submit Request
-                    </button>
-                  </div>
-                 </form>
-                 </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
       </AnimatePresence>
 
       {/* New User Modal */}
