@@ -646,10 +646,11 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
           <div className="text-center mb-8">
             <div className="mb-4 flex justify-center">
               <div className="w-16 h-16 bg-[#0056b3] rounded-full flex items-center justify-center shadow-lg shadow-blue-200">
-  <span className="text-white text-3xl font-bold italic">S</span>
-</div> 
+                <span className="text-white text-3xl font-bold italic">S</span>
+              </div>
             </div>
-            <p className="text-slate-500 mt-2">Halung Technics Tunisie</p>
+            <h1 className="text-xl font-black text-[#0056b3] tracking-tight">HR-HTT-SMART</h1>
+            <p className="text-slate-500 mt-1 text-sm">Halung Technics Tunisie</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
@@ -699,16 +700,7 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-slate-100">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center mb-4">Test Accounts</p>
-            <div className="grid grid-cols-1 gap-2">
-              <div className="p-3 bg-slate-50 rounded-xl text-[10px] text-slate-500">
-                <p><span className="font-bold text-slate-700">HR:</span> marie@rh.com / marie123</p>
-                <p><span className="font-bold text-slate-700">Manager:</span> karim@it.com / karim123</p>
-                <p><span className="font-bold text-slate-700">Superior:</span> sami@it.com / sami123</p>
-              </div>
-            </div>
-          </div>
+
         </motion.div>
       </div>
     );
@@ -1488,6 +1480,21 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
                                     <XCircle className="w-4 h-4" />
                                   </button>
                                 </>
+                              )}
+                              {currentUser.role === 'hr' && (
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm('Delete this document request?')) {
+                                      await fetch('/api/document-requests/' + req.id, { method: 'DELETE' });
+                                      setDocRequests(prev => prev.filter(r => r.id !== req.id));
+                                    }
+                                  }}
+                                  className="p-2 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                                  title="Delete"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                </button>
                               )}
                               {(currentUser.role === 'hr' && req.status === 'pending_hr') && (
                                 <button 
