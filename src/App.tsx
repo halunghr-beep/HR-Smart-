@@ -2376,6 +2376,26 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
                         onChange={e => setDocFormData(prev => ({ ...prev, employeeMatricule: e.target.value }))}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                         placeholder="Ex: 2024-001"
+                        />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Approving Manager</label>
+                    <select
+                      value={docFormData.targetManagerId}
+                      onChange={e => setDocFormData(prev => ({ ...prev, targetManagerId: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                    >
+                      <option value="">Select a manager</option>
+                      {availableUsers
+                        .filter(u => u.role === 'manager' || u.role === 'superior')
+                        .map(u => (
+                          <option key={u.id} value={u.id}>{u.name} — {u.department_name || 'Global'}</option>
+                        ))
+                      }
+                    </select>
+                  </div>
                       />
                     </div>
                   </div>
