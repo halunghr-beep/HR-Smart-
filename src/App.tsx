@@ -2461,13 +2461,6 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
                       Submit Request
                     </button>
                   </div>
-                      </select>
-                    </div>
-                  )}
-                      type="button"
-                      onClick={() => setShowNewDocModal(false)}
-                      className="flex-1 px-6 py-4 rounded-xl font-bold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-all uppercase tracking-widest text-xs"
-                    >
                       Cancel
                     </button>
                     <button 
