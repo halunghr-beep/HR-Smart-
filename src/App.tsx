@@ -2461,12 +2461,6 @@ directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule
                       Submit Request
                     </button>
                   </div>
-                    <button 
-                      type="submit"
-                      className="flex-[2] bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all uppercase tracking-widest text-xs"
-                    >
-                      Send Request
-                    </button>
                   </div>
                 </form>
               </div>
