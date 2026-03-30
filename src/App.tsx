@@ -956,6 +956,11 @@ export default function App() {
         </header>
 
         <div className="p-8 max-w-7xl mx-auto space-y-8">
+          {notificationPermission === 'denied' && (
+            <div className="p-4 bg-rose-50 text-rose-700 text-sm font-bold rounded-xl mb-4 border border-rose-200">
+              Notifications are blocked. Please allow them in your browser settings to receive alerts.
+            </div>
+          )}
           {(activeTab === 'hr-overview' || activeTab === 'ceo-overview') && (currentUser.role === 'hr' || currentUser.role === 'ceo') ? (
             <div className="space-y-8">
               {/* HR/CEO Summary Cards */}
