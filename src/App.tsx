@@ -431,7 +431,6 @@ export default function App() {
         setShowNewRequestModal(false);
         setFormData({ employeeName: '', employeeMatricule: '', type: 'paid', startDate: '', endDate: '', reason: '', targetManagerId: '', project: '', departmentId: '' });
         triggerNotification('Request Submitted', 'Your leave request has been submitted successfully.', 'leave');
-      }
       } else {
         const data = await res.json();
         alert(data.error || 'Error during submission');
