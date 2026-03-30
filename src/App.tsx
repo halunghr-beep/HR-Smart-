@@ -185,7 +185,6 @@ export default function App() {
 
   // Notification helper
   const triggerNotification = (title: string, body: string, type: 'leave' | 'document') => {
-    // Play sound based on type
     const soundUrl = type === 'leave' 
       ? 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg' 
       : 'https://actions.google.com/sounds/v1/notifications/digital_watch_alarm_long.ogg';
@@ -193,14 +192,16 @@ export default function App() {
     const audio = new Audio(soundUrl);
     audio.play().catch(e => console.error("Sound play failed", e));
 
-    // Show notification
-    if (Notification.permission === 'granted') {
-      new Notification(title, { body });
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, { 
+        body,
+        icon: '/icon-192.png'
+      });
     }
   };
 
   useEffect(() => {
-    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+    if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
       Notification.requestPermission();
     }
   }, []);
@@ -214,6 +215,8 @@ export default function App() {
     endDate: '',
     reason: '',
     targetManagerId: '',
+    project: '',
+    departmentId: '',
   });
 
   const [docFormData, setDocFormData] = useState({
@@ -411,7 +414,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           creatorId: currentUser.id,
-          departmentId: currentUser.department_id,
+          departmentId: formData.departmentId || currentUser.department_id,
           employeeName: formData.employeeName,
           employeeMatricule: formData.employeeMatricule,
           type: formData.type,
@@ -420,12 +423,15 @@ export default function App() {
           days: diffDays,
           reason: formData.reason,
           targetManagerId: formData.targetManagerId ? parseInt(formData.targetManagerId) : null,
-directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule)?.direct_to_ceo ?? currentUser.direct_to_ceo,
+          directToCeo: availableUsers.find(u => u.matricule === formData.employeeMatricule)?.direct_to_ceo ?? currentUser.direct_to_ceo,
+          project: formData.project,
         }),
       });
       if (res.ok) {
         setShowNewRequestModal(false);
-        setFormData({ employeeName: '', employeeMatricule: '', type: 'paid', startDate: '', endDate: '', reason: '', targetManagerId: '' });
+        setFormData({ employeeName: '', employeeMatricule: '', type: 'paid', startDate: '', endDate: '', reason: '', targetManagerId: '', project: '', departmentId: '' });
+        triggerNotification('Request Submitted', 'Your leave request has been submitted successfully.', 'leave');
+      }
       } else {
         const data = await res.json();
         alert(data.error || 'Error during submission');
