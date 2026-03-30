@@ -184,10 +184,14 @@ export default function App() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Notification helper
-  const triggerNotification = (title: string, body: string) => {
-    // Play sound
-    const beep = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
-    beep.play().catch(e => console.error("Sound play failed", e));
+  const triggerNotification = (title: string, body: string, type: 'leave' | 'document') => {
+    // Play sound based on type
+    const soundUrl = type === 'leave' 
+      ? 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg' 
+      : 'https://actions.google.com/sounds/v1/notifications/digital_watch_alarm_long.ogg';
+    
+    const audio = new Audio(soundUrl);
+    audio.play().catch(e => console.error("Sound play failed", e));
 
     // Show notification
     if (Notification.permission === 'granted') {
