@@ -200,7 +200,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (Notification.permission !== 'granted') {
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
       Notification.requestPermission();
     }
   }, []);
