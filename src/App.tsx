@@ -205,10 +205,6 @@ export default function App() {
   const [formData, setFormData] = useState({
     employeeName: '',
     employeeMatricule: '',
-  // Form State
-  const [formData, setFormData] = useState({
-    employeeName: '',
-    employeeMatricule: '',
     type: 'paid' as LeaveRequest['type'],
     startDate: '',
     endDate: '',
