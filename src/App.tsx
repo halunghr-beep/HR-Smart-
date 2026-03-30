@@ -201,7 +201,6 @@ export default function App() {
     }
   };
 
-  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
 
   useEffect(() => {
     setNotificationPermission(Notification.permission);
