@@ -246,16 +246,21 @@ export default function App() {
     const newSocket = io();
     setSocket(newSocket);
 
-    newSocket.on('leave_request_updated', (updatedRequest: LeaveRequest) => {
-      setRequests(prev => prev.map(r => r.id === updatedRequest.id ? updatedRequest : r));
+    newSocket.on('request_updated', ({ request, user }: { request: LeaveRequest, user?: User }) => {
+      setRequests(prev => prev.map(r => r.id === request.id ? request : r));
+      triggerNotification('Leave Request Updated', `Request status changed for ${request.employee_name}`, 'leave');
+      if (currentUser && user && user.id === currentUser.id) {
+        setCurrentUser(user);
+      }
       if (currentUser?.role === 'hr') {
         fetchDeptStats();
         fetchUsers();
       }
     });
 
-    newSocket.on('leave_request_created', (newRequest: LeaveRequest) => {
+    newSocket.on('request_created', (newRequest: LeaveRequest) => {
       setRequests(prev => [newRequest, ...prev]);
+      triggerNotification('New Leave Request', `New request from ${newRequest.employee_name}`, 'leave');
       if (currentUser?.role === 'hr') {
         fetchDeptStats();
       }
@@ -263,6 +268,7 @@ export default function App() {
 
     newSocket.on('document_request_created', (newRequest: AdminDocumentRequest) => {
       setDocRequests(prev => [newRequest, ...prev]);
+      triggerNotification('New Document Request', `New request from ${newRequest.employee_name}`, 'document');
       if (currentUser?.role === 'hr') {
         fetchDocStats();
       }
@@ -270,6 +276,7 @@ export default function App() {
 
     newSocket.on('document_request_updated', (updatedRequest: AdminDocumentRequest) => {
       setDocRequests(prev => prev.map(r => r.id === updatedRequest.id ? updatedRequest : r));
+      triggerNotification('Document Request Updated', `Request status changed for ${updatedRequest.employee_name}`, 'document');
       if (currentUser?.role === 'hr') {
         fetchDocStats();
       }
