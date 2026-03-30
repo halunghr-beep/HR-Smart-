@@ -182,7 +182,8 @@ export default function App() {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-
+ const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+  
   // Notification helper
   const triggerNotification = (title: string, body: string, type: 'leave' | 'document') => {
     const soundUrl = type === 'leave' 
