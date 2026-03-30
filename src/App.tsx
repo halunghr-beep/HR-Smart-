@@ -201,9 +201,17 @@ export default function App() {
     }
   };
 
+  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+
+  useEffect(() => {
+    setNotificationPermission(Notification.permission);
+  }, []);
+
   useEffect(() => {
     if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-      Notification.requestPermission();
+      Notification.requestPermission().then(permission => {
+        setNotificationPermission(permission);
+      });
     }
   }, []);
 
