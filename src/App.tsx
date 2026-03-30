@@ -901,6 +901,12 @@ export default function App() {
             </h2>
           </div>
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => triggerNotification('Test Notification', 'This is a test notification!', 'leave')}
+              className="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg font-bold hover:bg-indigo-200 transition-colors"
+            >
+              Test Notification
+            </button>
             {(currentUser?.role === 'superior' || currentUser?.direct_to_ceo === 1) && activeTab === 'dashboard' && (
               <button 
                 onClick={() => setShowNewRequestModal(true)}
