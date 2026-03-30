@@ -183,6 +183,28 @@ export default function App() {
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  // Notification helper
+  const triggerNotification = (title: string, body: string) => {
+    // Play sound
+    const beep = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+    beep.play().catch(e => console.error("Sound play failed", e));
+
+    // Show notification
+    if (Notification.permission === 'granted') {
+      new Notification(title, { body });
+    }
+  };
+
+  useEffect(() => {
+    if (Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // Form State
+  const [formData, setFormData] = useState({
+    employeeName: '',
+    employeeMatricule: '',
   // Form State
   const [formData, setFormData] = useState({
     employeeName: '',
