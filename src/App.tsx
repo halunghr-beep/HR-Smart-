@@ -186,13 +186,26 @@ export default function App() {
  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   
   // Notification helper
+  const playChime = () => {
+    try {
+      const ctx = new AudioContext();
+      [0, 0.13, 0.26].forEach((delay, i) => {
+        const freqs = [659, 784, 1047];
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = freqs[i];
+        o.type = 'sine';
+        g.gain.setValueAtTime(0.25, ctx.currentTime + delay);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.5);
+        o.start(ctx.currentTime + delay);
+        o.stop(ctx.currentTime + delay + 0.5);
+      });
+    } catch (e) { console.error('Sound play failed', e); }
+  };
+
   const triggerNotification = (title: string, body: string, type: 'leave' | 'document') => {
-    const soundUrl = type === 'leave' 
-      ? 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg' 
-      : 'https://actions.google.com/sounds/v1/notifications/digital_watch_alarm_long.ogg';
-    
-    const audio = new Audio(soundUrl);
-    audio.play().catch(e => console.error("Sound play failed", e));
+    playChime();
 
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(title, { 
