@@ -54,6 +54,7 @@ import {
 } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { cn } from './lib/utils';
+import { setupPWA } from './lib/usePWA';
 
 // Types
 interface User {
@@ -213,6 +214,13 @@ export default function App() {
       });
     }
   }, []);
+
+  // PWA Setup — Push notifications (background/mobile)
+  useEffect(() => {
+    if (currentUser) {
+      setupPWA();
+    }
+  }, [currentUser?.id]);
 
   // Form State
   const [formData, setFormData] = useState({
