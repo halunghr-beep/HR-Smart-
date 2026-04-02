@@ -6,35 +6,10 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import nodemailer from "nodemailer";
-import webpush from "web-push";
 import dotenv from "dotenv";
 import cron from "node-cron";
 
 dotenv.config();
-
-// ── VAPID Setup (run once: npx web-push generate-vapid-keys) ──
-if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-  webpush.setVapidDetails(
-    `mailto:${process.env.SMTP_USER || "admin@halung.com"}`,
-    process.env.VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY
-  );
-}
-
-// Push subscription store (keyed by userId)
-const pushSubscriptions = new Map<string, webpush.PushSubscription>();
-
-async function sendPushToUser(userId: number | null | undefined, payload: object) {
-  if (!userId) return;
-  const sub = pushSubscriptions.get(String(userId));
-  if (!sub) return;
-  try {
-    await webpush.sendNotification(sub, JSON.stringify(payload));
-  } catch (err: any) {
-    if (err.statusCode === 410) pushSubscriptions.delete(String(userId));
-    console.error("[Push] Failed:", err.message);
-  }
-}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -287,13 +262,7 @@ async function startServer() {
 
       const result = await db.execute({ sql: `INSERT INTO leave_requests (employee_name, employee_matricule, department_id, created_by_id, type, start_date, end_date, days, reason, status, target_manager_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`, args: [employeeName, employeeMatricule, departmentId, creatorId, type, startDate, endDate, days, reason, initialStatus, targetManagerId || null] });
       const newRequest = await db.execute({ sql: `SELECT lr.*, cb.name as creator_name, d.name as department_name FROM leave_requests lr JOIN users cb ON lr.created_by_id = cb.id LEFT JOIN departments d ON lr.department_id = d.id WHERE lr.id = ?`, args: [result.lastInsertRowid] });
-      io.emit("leave_request_created", newRequest.rows[0]);
-      const lrCreated = newRequest.rows[0] as any;
-      await sendPushToUser(lrCreated.target_manager_id, {
-        title: "🔔 New Leave Request",
-        body: `${lrCreated.employee_name} submitted a leave request`,
-        type: "leave", url: "/",
-      });
+      io.emit("request_created", newRequest.rows[0]);
       res.json(newRequest.rows[0]);
     } catch (error: any) { res.status(500).json({ error: error.message }); }
   });
@@ -326,13 +295,7 @@ async function startServer() {
 
       await db.execute({ sql: `UPDATE leave_requests SET status=?, manager_approved_at=?, ceo_approved_at=?, hr_treated_at=? WHERE id=?`, args: [newStatus, manager_approved_at, ceo_approved_at, hr_treated_at, id] });
       const updated = await db.execute({ sql: `SELECT lr.*, cb.name as creator_name, d.name as department_name FROM leave_requests lr JOIN users cb ON lr.created_by_id = cb.id LEFT JOIN departments d ON lr.department_id = d.id WHERE lr.id = ?`, args: [id] });
-      io.emit("leave_request_updated", updated.rows[0]);
-      const lrUpdated = updated.rows[0] as any;
-      await sendPushToUser(lrUpdated.created_by_id, {
-        title: "📋 Leave Request Updated",
-        body: `Your request status changed to: ${lrUpdated.status}`,
-        type: "leave", url: "/",
-      });
+      io.emit("request_updated", updated.rows[0]);
       res.json(updated.rows[0]);
     } catch (error: any) { res.status(500).json({ error: error.message }); }
   });
@@ -369,12 +332,6 @@ async function startServer() {
       const result = await db.execute({ sql: `INSERT INTO admin_document_requests (employee_name, employee_matricule, department_id, created_by_id, type, purpose, status, target_manager_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`, args: [employeeName, employeeMatricule, departmentId, creatorId, type, purpose, initialStatus, targetManagerId || null] });
       const newReq = await db.execute({ sql: `SELECT dr.*, cb.name as creator_name, d.name as department_name FROM admin_document_requests dr JOIN users cb ON dr.created_by_id = cb.id LEFT JOIN departments d ON dr.department_id = d.id WHERE dr.id = ?`, args: [result.lastInsertRowid] });
       io.emit("document_request_created", newReq.rows[0]);
-      const drCreated = newReq.rows[0] as any;
-      await sendPushToUser(drCreated.target_manager_id, {
-        title: "📄 New Document Request",
-        body: `${drCreated.employee_name} requested a document`,
-        type: "document", url: "/",
-      });
       res.json(newReq.rows[0]);
     } catch (error: any) { res.status(500).json({ error: error.message }); }
   });
@@ -404,12 +361,6 @@ async function startServer() {
       await db.execute({ sql: `UPDATE admin_document_requests SET status=?, manager_approved_at=?, hr_treated_at=? WHERE id=?`, args: [newStatus, manager_approved_at, hr_treated_at, id] });
       const updated = await db.execute({ sql: `SELECT dr.*, cb.name as creator_name, d.name as department_name FROM admin_document_requests dr JOIN users cb ON dr.created_by_id = cb.id LEFT JOIN departments d ON dr.department_id = d.id WHERE dr.id = ?`, args: [id] });
       io.emit("document_request_updated", updated.rows[0]);
-      const drUpdated = updated.rows[0] as any;
-      await sendPushToUser(drUpdated.created_by_id, {
-        title: "📄 Document Request Updated",
-        body: `Your document request status changed to: ${drUpdated.status}`,
-        type: "document", url: "/",
-      });
       res.json(updated.rows[0]);
     } catch (error: any) { res.status(500).json({ error: error.message }); }
   });
@@ -438,20 +389,6 @@ async function startServer() {
       const userStats = await db.execute(`SELECT employee_name, COUNT(*) as count FROM admin_document_requests GROUP BY employee_matricule ORDER BY count DESC LIMIT 5`);
       res.json({ typeStats: typeStats.rows, deptStats: deptStats.rows, userStats: userStats.rows });
     } catch (error: any) { res.status(500).json({ error: error.message }); }
-  });
-
-  // ── PUSH NOTIFICATIONS ──
-  app.get("/api/push/vapid-public-key", (req, res) => {
-    res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || "" });
-  });
-
-  app.post("/api/push/subscribe", (req, res) => {
-    const { userId, subscription } = req.body;
-    if (userId && subscription) {
-      pushSubscriptions.set(String(userId), subscription);
-      console.log(`[Push] Subscription saved for user: ${userId}`);
-    }
-    res.json({ success: true });
   });
 
   // ── STATIC ──
