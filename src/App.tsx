@@ -147,7 +147,12 @@ const DOC_STATUS_STYLES = {
 };
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    try {
+      const saved = localStorage.getItem('hr_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [docRequests, setDocRequests] = useState<AdminDocumentRequest[]>([]);
@@ -184,7 +189,7 @@ export default function App() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   
-  // Chime sound — Web Audio API (works offline + mobile)
+  // Chime — Web Audio API (offline + mobile compatible)
   const playChime = () => {
     try {
       const ctx = new AudioContext();
@@ -204,14 +209,10 @@ export default function App() {
   };
 
   // Notification helper
-  const triggerNotification = (title: string, body: string, type: 'leave' | 'document') => {
+  const triggerNotification = (title: string, body: string, _type: 'leave' | 'document') => {
     playChime();
-
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { 
-        body,
-        icon: '/icon-192.png'
-      });
+      new Notification(title, { body, icon: '/icon-192.png' });
     }
   };
 
@@ -219,6 +220,17 @@ export default function App() {
   useEffect(() => {
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
+    }
+    // Auto-restore session on startup
+    const saved = localStorage.getItem('hr_user');
+    if (saved) {
+      try {
+        const user = JSON.parse(saved);
+        fetchRequests(user);
+        if (user.role === 'hr') setActiveTab('hr-overview');
+        else if (user.role === 'ceo') setActiveTab('ceo-overview');
+        else setActiveTab('dashboard');
+      } catch {}
     }
   }, []);
 
@@ -229,13 +241,6 @@ export default function App() {
       });
     }
   }, []);
-
-  // PWA Setup — push notifications background/mobile
-  useEffect(() => {
-    if (currentUser && location.protocol !== 'capacitor:') {
-      import('./lib/usePWA').then(({ setupPWA }) => setupPWA()).catch(() => {});
-    }
-  }, [currentUser?.id]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -412,6 +417,7 @@ export default function App() {
       
       if (res.ok) {
         setCurrentUser(data);
+        localStorage.setItem('hr_user', JSON.stringify(data));
         fetchRequests(data);
         if (data.role === 'hr') setActiveTab('hr-overview');
         else if (data.role === 'ceo') setActiveTab('ceo-overview');
@@ -429,6 +435,7 @@ export default function App() {
   const handleLogout = () => {
     setCurrentUser(null);
     setRequests([]);
+    localStorage.removeItem('hr_user');
   };
 
   const handleSubmitRequest = async (e: React.FormEvent) => {
