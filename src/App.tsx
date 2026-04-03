@@ -182,7 +182,7 @@ export default function App() {
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
- const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
+ const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   
   // Notification helper
   const triggerNotification = (title: string, body: string, type: 'leave' | 'document') => {
@@ -203,7 +203,9 @@ export default function App() {
 
 
   useEffect(() => {
-    setNotificationPermission(Notification.permission);
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
   }, []);
 
   useEffect(() => {
@@ -254,8 +256,7 @@ export default function App() {
   const [postFormData, setPostFormData] = useState({ title: '', departmentId: '' });
 
   useEffect(() => {
-    const isCapacitor = !!(window as any).Capacitor;
-    const serverUrl = isCapacitor ? 'https://hr-smart.onrender.com' : '';
+    const serverUrl = location.protocol === 'capacitor:' ? 'https://hr-smart.onrender.com' : '';
     const newSocket = io(serverUrl);
     setSocket(newSocket);
 
