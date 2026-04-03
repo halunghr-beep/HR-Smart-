@@ -14,16 +14,16 @@
   <body>
     <div id="root"></div>
     <script>
-      // Intercept /api/ calls → full Render URL when running in Capacitor
-      if (window.Capacitor) {
-        const _fetch = window.fetch.bind(window);
-        window.fetch = (input, init) => {
-          if (typeof input === 'string' && input.startsWith('/api/')) {
+      // Redirect /api/ calls to Render when running inside Capacitor APK
+      const _fetch = window.fetch.bind(window);
+      window.fetch = function(input, init) {
+        if (typeof input === 'string' && input.startsWith('/api/')) {
+          if (location.protocol === 'capacitor:' || (location.hostname === 'localhost' && !location.port)) {
             input = 'https://hr-smart.onrender.com' + input;
           }
-          return _fetch(input, init);
-        };
-      }
+        }
+        return _fetch(input, init);
+      };
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <script>
