@@ -54,7 +54,6 @@ import {
 } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { cn } from './lib/utils';
-import { setupPWA } from './lib/usePWA';
 
 // Types
 interface User {
@@ -186,26 +185,13 @@ export default function App() {
  const [notificationPermission, setNotificationPermission] = useState(Notification.permission);
   
   // Notification helper
-  const playChime = () => {
-    try {
-      const ctx = new AudioContext();
-      [0, 0.13, 0.26].forEach((delay, i) => {
-        const freqs = [659, 784, 1047];
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.frequency.value = freqs[i];
-        o.type = 'sine';
-        g.gain.setValueAtTime(0.25, ctx.currentTime + delay);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.5);
-        o.start(ctx.currentTime + delay);
-        o.stop(ctx.currentTime + delay + 0.5);
-      });
-    } catch (e) { console.error('Sound play failed', e); }
-  };
-
   const triggerNotification = (title: string, body: string, type: 'leave' | 'document') => {
-    playChime();
+    const soundUrl = type === 'leave' 
+      ? 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg' 
+      : 'https://actions.google.com/sounds/v1/notifications/digital_watch_alarm_long.ogg';
+    
+    const audio = new Audio(soundUrl);
+    audio.play().catch(e => console.error("Sound play failed", e));
 
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification(title, { 
@@ -227,13 +213,6 @@ export default function App() {
       });
     }
   }, []);
-
-  // PWA Setup — Push notifications (background/mobile)
-  useEffect(() => {
-    if (currentUser) {
-      setupPWA();
-    }
-  }, [currentUser?.id]);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -275,7 +254,9 @@ export default function App() {
   const [postFormData, setPostFormData] = useState({ title: '', departmentId: '' });
 
   useEffect(() => {
-    const newSocket = io();
+    const isCapacitor = !!(window as any).Capacitor;
+    const serverUrl = isCapacitor ? 'https://hr-smart.onrender.com' : '';
+    const newSocket = io(serverUrl);
     setSocket(newSocket);
 
     newSocket.on('request_updated', ({ request, user }: { request: LeaveRequest, user?: User }) => {
