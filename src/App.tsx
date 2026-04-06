@@ -190,6 +190,9 @@ export default function App() {
  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   
   // Chime — Web Audio API (offline + mobile compatible)
+  // In-app toast state
+  const [toasts, setToasts] = useState<{id:number; title:string; body:string}[]>([]);
+
   const playChime = () => {
     try {
       const ctx = new AudioContext();
@@ -198,21 +201,24 @@ export default function App() {
         const o = ctx.createOscillator();
         const g = ctx.createGain();
         o.connect(g); g.connect(ctx.destination);
-        o.frequency.value = freqs[i];
-        o.type = 'sine';
+        o.frequency.value = freqs[i]; o.type = 'sine';
         g.gain.setValueAtTime(0.25, ctx.currentTime + delay);
         g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.5);
         o.start(ctx.currentTime + delay);
         o.stop(ctx.currentTime + delay + 0.5);
       });
-    } catch (e) { console.error('Sound failed', e); }
+    } catch (e) {}
   };
 
-  // Notification helper
   const triggerNotification = (title: string, body: string, _type: 'leave' | 'document') => {
     playChime();
+    // In-app toast (works on all platforms including Capacitor)
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, title, body }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+    // Browser notification (web only)
     if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(title, { body, icon: '/icon-192.png' });
+      try { new Notification(title, { body, icon: '/icon-192.png' }); } catch(e) {}
     }
   };
 
@@ -915,7 +921,7 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pb-20 lg:pb-0">
         <header className="bg-white border-b border-slate-200 p-6 flex items-center justify-between sticky top-0 z-10">
           <div>
             <h2 className="text-xl font-bold text-slate-900">
@@ -3159,6 +3165,48 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Toast notifications — works on all platforms */}
+      <div style={{position:'fixed', bottom: '80px', left:'50%', transform:'translateX(-50%)', zIndex:9999, display:'flex', flexDirection:'column', gap:'8px', width:'90%', maxWidth:'360px', pointerEvents:'none'}}>
+        {toasts.map(t => (
+          <div key={t.id} style={{background:'#1e293b', color:'white', borderRadius:'16px', padding:'12px 16px', boxShadow:'0 4px 24px rgba(0,0,0,0.3)', pointerEvents:'auto'}}>
+            <div style={{fontWeight:700, fontSize:'13px', marginBottom:'2px'}}>🔔 {t.title}</div>
+            <div style={{fontSize:'12px', opacity:0.85}}>{t.body}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 lg:hidden z-50 flex">
+        <button onClick={() => setActiveTab('dashboard')} className={cn("flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-bold transition-colors", activeTab === 'dashboard' ? "text-indigo-600" : "text-slate-400")}>
+          <LayoutDashboard className="w-5 h-5" />
+          Dashboard
+        </button>
+        <button onClick={() => setActiveTab('calendar')} className={cn("flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-bold transition-colors", activeTab === 'calendar' ? "text-indigo-600" : "text-slate-400")}>
+          <Calendar className="w-5 h-5" />
+          Calendar
+        </button>
+        <button onClick={() => setActiveTab('documents')} className={cn("flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-bold transition-colors", activeTab === 'documents' ? "text-indigo-600" : "text-slate-400")}>
+          <FileText className="w-5 h-5" />
+          Docs
+        </button>
+        {(currentUser.role === 'hr' || currentUser.role === 'ceo') && (
+          <button onClick={() => setActiveTab(currentUser.role === 'hr' ? 'hr-overview' : 'ceo-overview')} className={cn("flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-bold transition-colors", (activeTab === 'hr-overview' || activeTab === 'ceo-overview') ? "text-indigo-600" : "text-slate-400")}>
+            <TrendingUp className="w-5 h-5" />
+            Overview
+          </button>
+        )}
+        {currentUser.role === 'hr' && (
+          <button onClick={() => setActiveTab('users')} className={cn("flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-bold transition-colors", activeTab === 'users' ? "text-indigo-600" : "text-slate-400")}>
+            <Users className="w-5 h-5" />
+            Users
+          </button>
+        )}
+        <button onClick={handleLogout} className="flex-1 flex flex-col items-center py-3 gap-1 text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors">
+          <LogOut className="w-5 h-5" />
+          Logout
+        </button>
+      </nav>
     </div>
   );
 }
