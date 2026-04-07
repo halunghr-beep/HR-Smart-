@@ -10,21 +10,88 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="HR Smart" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
+    <style>
+      #splash {
+        position: fixed; inset: 0; background: #4f46e5;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        z-index: 9999; transition: opacity 0.4s;
+      }
+      #splash.hidden { opacity: 0; pointer-events: none; }
+      #splash-logo {
+        width: 80px; height: 80px; background: white; border-radius: 24px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 36px; font-weight: 900; color: #4f46e5;
+        margin-bottom: 24px; font-family: sans-serif;
+      }
+      #splash-title { color: white; font-size: 24px; font-weight: 700; font-family: sans-serif; margin-bottom: 8px; }
+      #splash-msg { color: rgba(255,255,255,0.7); font-size: 14px; font-family: sans-serif; margin-bottom: 32px; }
+      #splash-dots { display: flex; gap: 8px; }
+      #splash-dots span {
+        width: 8px; height: 8px; background: white; border-radius: 50%;
+        animation: bounce 1.2s infinite;
+      }
+      #splash-dots span:nth-child(2) { animation-delay: 0.2s; }
+      #splash-dots span:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes bounce { 0%,80%,100%{opacity:0.3;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+      #retry-btn {
+        display: none; margin-top: 24px; padding: 12px 28px;
+        background: white; color: #4f46e5; border: none;
+        border-radius: 12px; font-weight: 700; font-size: 14px;
+        font-family: sans-serif; cursor: pointer;
+      }
+    </style>
   </head>
   <body>
+    <!-- Splash screen -->
+    <div id="splash">
+      <div id="splash-logo">S</div>
+      <div id="splash-title">HR Smart</div>
+      <div id="splash-msg" id="splash-msg">Connecting...</div>
+      <div id="splash-dots"><span></span><span></span><span></span></div>
+      <button id="retry-btn" onclick="location.reload()">Retry</button>
+    </div>
+
     <div id="root"></div>
+
     <script>
-      // Redirect /api/ calls to Render when running inside Capacitor APK
-      const _fetch = window.fetch.bind(window);
-      window.fetch = function(input, init) {
-        if (typeof input === 'string' && input.startsWith('/api/')) {
-          if (location.protocol === 'capacitor:' || (location.hostname === 'localhost' && !location.port)) {
-            input = 'https://hr-smart.onrender.com' + input;
+      const splash = document.getElementById('splash');
+      const msg = document.getElementById('splash-msg');
+      const retryBtn = document.getElementById('retry-btn');
+      let attempts = 0;
+
+      async function checkServer() {
+        try {
+          const res = await fetch('https://hr-smart.onrender.com/api/users', { method: 'HEAD' });
+          if (res.ok || res.status === 405 || res.status === 401) {
+            hideSplash();
+            return;
           }
+        } catch(e) {}
+
+        attempts++;
+        if (attempts >= 15) {
+          msg.textContent = 'Taking too long... check your connection.';
+          retryBtn.style.display = 'block';
+          return;
         }
-        return _fetch(input, init);
-      };
+
+        if (attempts > 5) msg.textContent = 'Waking up server... please wait';
+        setTimeout(checkServer, 3000);
+      }
+
+      function hideSplash() {
+        splash.classList.add('hidden');
+        setTimeout(() => splash.remove(), 500);
+      }
+
+      // Start checking after 1s
+      setTimeout(checkServer, 1000);
+
+      // Also hide splash when React mounts
+      window.__hideSplash = hideSplash;
     </script>
+
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
