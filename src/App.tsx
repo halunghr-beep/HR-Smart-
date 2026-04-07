@@ -343,6 +343,8 @@ export default function App() {
       const data = await res.json();
       setAvailableUsers(data);
       setLoading(false);
+      // Hide splash screen once app is ready
+      if ((window as any).__hideSplash) (window as any).__hideSplash();
     } catch (err) {
       console.error(err);
     }
