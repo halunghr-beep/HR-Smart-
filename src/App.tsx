@@ -161,6 +161,9 @@ export default function App() {
   const [departments, setDepartments] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    return !localStorage.getItem('hr_onboarding_done');
+  });
   const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'structure' | 'calendar' | 'hr-overview' | 'ceo-overview' | 'documents'>('dashboard');
   const [dashboardFilter, setDashboardFilter] = useState({
     status: 'all',
@@ -713,6 +716,81 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      </div>
+    );
+  }
+
+  // ── ONBOARDING SCREEN ─────────────────────────────────────
+  if (showOnboarding) {
+    const requestPermissions = async () => {
+      // Notification permission
+      if ('Notification' in window) {
+        try { await Notification.requestPermission(); } catch(e) {}
+      }
+      // Storage — just accessing localStorage is enough to "request" it
+      try { localStorage.setItem('hr_storage_ok', '1'); } catch(e) {}
+      // Done
+      localStorage.setItem('hr_onboarding_done', '1');
+      setShowOnboarding(false);
+    };
+
+    return (
+      <div style={{minHeight:'100vh', background:'linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%)', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px'}}>
+        <div style={{background:'white', borderRadius:'28px', padding:'36px 28px', maxWidth:'380px', width:'100%', textAlign:'center', boxShadow:'0 24px 64px rgba(0,0,0,0.2)'}}>
+          
+          {/* Logo */}
+          <div style={{width:'72px', height:'72px', background:'#4f46e5', borderRadius:'20px', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px', boxShadow:'0 8px 24px rgba(79,70,229,0.35)'}}>
+            <span style={{color:'white', fontSize:'32px', fontWeight:900, fontStyle:'italic'}}>S</span>
+          </div>
+
+          <h1 style={{fontSize:'22px', fontWeight:700, color:'#0f172a', marginBottom:'6px'}}>Welcome to HR Smart</h1>
+          <p style={{fontSize:'14px', color:'#64748b', marginBottom:'32px', lineHeight:1.6}}>To give you the best experience, we need a few permissions</p>
+
+          {/* Permission cards */}
+          <div style={{display:'flex', flexDirection:'column', gap:'12px', marginBottom:'32px', textAlign:'left'}}>
+            <div style={{display:'flex', alignItems:'center', gap:'14px', background:'#f0fdf4', borderRadius:'16px', padding:'14px'}}>
+              <div style={{width:'40px', height:'40px', background:'#dcfce7', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:'20px'}}>🔔</div>
+              <div>
+                <div style={{fontSize:'14px', fontWeight:600, color:'#166534'}}>Notifications</div>
+                <div style={{fontSize:'12px', color:'#4ade80'}}>Get alerted for new requests instantly</div>
+              </div>
+            </div>
+
+            <div style={{display:'flex', alignItems:'center', gap:'14px', background:'#eff6ff', borderRadius:'16px', padding:'14px'}}>
+              <div style={{width:'40px', height:'40px', background:'#dbeafe', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:'20px'}}>💾</div>
+              <div>
+                <div style={{fontSize:'14px', fontWeight:600, color:'#1e40af'}}>Storage</div>
+                <div style={{fontSize:'12px', color:'#60a5fa'}}>Stay logged in between sessions</div>
+              </div>
+            </div>
+
+            <div style={{display:'flex', alignItems:'center', gap:'14px', background:'#faf5ff', borderRadius:'16px', padding:'14px'}}>
+              <div style={{width:'40px', height:'40px', background:'#f3e8ff', borderRadius:'12px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:'20px'}}>📱</div>
+              <div>
+                <div style={{fontSize:'14px', fontWeight:600, color:'#6b21a8'}}>Mobile ready</div>
+                <div style={{fontSize:'12px', color:'#c084fc'}}>Works on Android & iPhone</div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={requestPermissions}
+            style={{width:'100%', background:'#4f46e5', color:'white', border:'none', borderRadius:'16px', padding:'16px', fontSize:'15px', fontWeight:700, cursor:'pointer', boxShadow:'0 8px 24px rgba(79,70,229,0.35)', marginBottom:'12px'}}
+          >
+            Allow & Continue
+          </button>
+
+          <button
+            onClick={() => { localStorage.setItem('hr_onboarding_done','1'); setShowOnboarding(false); }}
+            style={{width:'100%', background:'transparent', color:'#94a3b8', border:'none', fontSize:'13px', cursor:'pointer', padding:'8px'}}
+          >
+            Skip for now
+          </button>
+
+          <p style={{fontSize:'11px', color:'#cbd5e1', marginTop:'16px'}}>
+            Created by Firas Chebbi · HR Smart
+          </p>
+        </div>
       </div>
     );
   }
