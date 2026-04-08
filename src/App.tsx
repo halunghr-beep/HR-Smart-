@@ -3209,6 +3209,32 @@ export default function App() {
           Logout
         </button>
       </nav>
+
+      {/* Signature — always visible */}
+      <div style={{
+        position: 'fixed',
+        bottom: '60px',
+        right: '12px',
+        zIndex: 9998,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        background: 'rgba(79,70,229,0.08)',
+        border: '0.5px solid rgba(79,70,229,0.2)',
+        borderRadius: '20px',
+        padding: '4px 10px',
+        backdropFilter: 'blur(8px)',
+        pointerEvents: 'none',
+      }}>
+        <div style={{
+          width: '18px', height: '18px', borderRadius: '50%',
+          background: '#4f46e5', display: 'flex', alignItems: 'center',
+          justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: 'white'
+        }}>F</div>
+        <span style={{fontSize: '11px', fontWeight: 600, color: '#4f46e5', whiteSpace: 'nowrap'}}>
+          Created by Firas Chebbi
+        </span>
+      </div>
     </div>
   );
 }
