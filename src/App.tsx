@@ -723,11 +723,24 @@ export default function App() {
   // ── ONBOARDING SCREEN ─────────────────────────────────────
   if (showOnboarding) {
     const requestPermissions = async () => {
-      // Notification permission
-      if ('Notification' in window) {
-        try { await Notification.requestPermission(); } catch(e) {}
+      // Capacitor Local Notifications (real Android/iOS permission dialog)
+      try {
+        const { Capacitor } = await import('@capacitor/core');
+        if (Capacitor.isNativePlatform()) {
+          const { LocalNotifications } = await import('@capacitor/local-notifications');
+          const perm = await LocalNotifications.requestPermissions();
+          console.log('[Notif] Capacitor permission:', perm.display);
+        } else {
+          // Web fallback
+          if ('Notification' in window) await Notification.requestPermission();
+        }
+      } catch(e) {
+        // Fallback if plugin not available
+        if ('Notification' in window) {
+          try { await Notification.requestPermission(); } catch(e2) {}
+        }
       }
-      // Storage — just accessing localStorage is enough to "request" it
+      // Storage
       try { localStorage.setItem('hr_storage_ok', '1'); } catch(e) {}
       // Done
       localStorage.setItem('hr_onboarding_done', '1');
