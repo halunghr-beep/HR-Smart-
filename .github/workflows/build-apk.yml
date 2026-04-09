@@ -46,6 +46,13 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      - name: Add notification permissions to AndroidManifest
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if ! grep -q "POST_NOTIFICATIONS" "$MANIFEST"; then
+            sed -i 's|<uses-permission android:name="android.permission.INTERNET" />|<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />\n    <uses-permission android:name="android.permission.VIBRATE" />|' "$MANIFEST"
+          fi
+
       - name: Make gradlew executable
         run: chmod +x android/gradlew
 
