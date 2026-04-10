@@ -213,15 +213,42 @@ export default function App() {
     } catch (e) {}
   };
 
-  const triggerNotification = (title: string, body: string, _type: 'leave' | 'document') => {
+  const triggerNotification = async (title: string, body: string, _type: 'leave' | 'document') => {
     playChime();
-    // In-app toast (works on all platforms including Capacitor)
+
+    // 1) In-app toast — always visible when app is open
     const id = Date.now();
     setToasts(prev => [...prev, { id, title, body }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
-    // Browser notification (web only)
-    if ('Notification' in window && Notification.permission === 'granted') {
-      try { new Notification(title, { body, icon: '/icon-192.png' }); } catch(e) {}
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000);
+
+    // 2) Real Android/iOS system notification via Capacitor
+    try {
+      const { Capacitor } = await import('@capacitor/core');
+      if (Capacitor.isNativePlatform()) {
+        const { LocalNotifications } = await import('@capacitor/local-notifications');
+        const perm = await LocalNotifications.checkPermissions();
+        if (perm.display === 'granted') {
+          await LocalNotifications.schedule({
+            notifications: [{
+              id: Math.floor(Math.random() * 100000),
+              title,
+              body,
+              smallIcon: 'ic_stat_icon_config_sample',
+              iconColor: '#4f46e5',
+              sound: undefined,
+              actionTypeId: '',
+              extra: null,
+            }]
+          });
+        }
+      } else {
+        // Web browser fallback
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(title, { body, icon: '/icon-192.png' });
+        }
+      }
+    } catch(e) {
+      console.error('[Notif]', e);
     }
   };
 
