@@ -89,6 +89,15 @@ async function initDB() {
       hr_treated_at DATETIME
     );
 
+    CREATE TABLE IF NOT EXISTS employees (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      matricule TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      balance INTEGER DEFAULT 0,
+      department_id INTEGER,
+      FOREIGN KEY (department_id) REFERENCES departments(id)
+    );
+
     CREATE TABLE IF NOT EXISTS admin_document_requests (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       employee_name TEXT NOT NULL,
@@ -391,6 +400,38 @@ async function startServer() {
     } catch (error: any) { res.status(500).json({ error: error.message }); }
   });
 
+  // ── EMPLOYEES (CSV roster) ──
+  app.get("/api/employees", async (req, res) => {
+    try {
+      const result = await db.execute(`
+        SELECT e.*, d.name as department_name 
+        FROM employees e 
+        LEFT JOIN departments d ON e.department_id = d.id 
+        ORDER BY e.name
+      `);
+      res.json(result.rows);
+    } catch (error: any) { res.status(500).json({ error: error.message }); }
+  });
+
+  app.post("/api/employees/bulk", async (req, res) => {
+    try {
+      const { employees } = req.body as { employees: { matricule: string; name: string; balance: number }[] };
+      let updated = 0; let created = 0;
+
+      for (const { matricule, name, balance } of employees) {
+        const existing = await db.execute({ sql: "SELECT id FROM employees WHERE matricule = ?", args: [matricule] });
+        if (existing.rows.length > 0) {
+          await db.execute({ sql: "UPDATE employees SET name = ?, balance = ? WHERE matricule = ?", args: [name, balance, matricule] });
+          updated++;
+        } else {
+          await db.execute({ sql: "INSERT INTO employees (matricule, name, balance) VALUES (?, ?, ?)", args: [matricule, name, balance] });
+          created++;
+        }
+      }
+      res.json({ success: true, created, updated });
+    } catch (error: any) { res.status(500).json({ error: error.message }); }
+  });
+
   // ── BULK BALANCE UPDATE ──
   app.post("/api/users/bulk-balance", async (req, res) => {
     try {
@@ -408,6 +449,13 @@ async function startServer() {
           sql: "UPDATE users SET balance = ?, name = COALESCE(NULLIF(?, ''), name) WHERE matricule = ?",
           args: [balance, name, matricule]
         });
+        // Also update employees table
+        const empExisting = await db.execute({ sql: "SELECT id FROM employees WHERE matricule = ?", args: [matricule] });
+        if (empExisting.rows.length > 0) {
+          await db.execute({ sql: "UPDATE employees SET balance = ?, name = COALESCE(NULLIF(?, ''), name) WHERE matricule = ?", args: [balance, name, matricule] });
+        } else {
+          await db.execute({ sql: "INSERT INTO employees (matricule, name, balance) VALUES (?, ?, ?)", args: [matricule, name, balance] });
+        }
         updated++;
       }
 
