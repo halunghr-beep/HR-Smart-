@@ -154,6 +154,7 @@ export default function App() {
     } catch { return null; }
   });
   const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+  const [employees, setEmployees] = useState<{id:number; matricule:string; name:string; balance:number}[]>([]);
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [docRequests, setDocRequests] = useState<AdminDocumentRequest[]>([]);
   const [deptStats, setDeptStats] = useState<any[]>([]);
@@ -362,6 +363,7 @@ export default function App() {
     fetchUsers();
     fetchDepartments();
     fetchPosts();
+    fetchEmployees();
 
     return () => {
       newSocket.close();
@@ -399,6 +401,14 @@ export default function App() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const fetchEmployees = async () => {
+    try {
+      const res = await fetch('/api/employees');
+      const data = await res.json();
+      setEmployees(data);
+    } catch(e) {}
   };
 
   const fetchRequests = async (user: User) => {
@@ -2237,15 +2247,24 @@ export default function App() {
                         if (mat && name) updates.push({ matricule: mat, name, balance });
                       }
                       try {
-                        const res = await fetch('/api/users/bulk-balance', {
-                          method: 'POST',
-                          headers: {'Content-Type': 'application/json'},
-                          body: JSON.stringify({ updates })
-                        });
-                        const data = await res.json();
+                        // Upload to both endpoints
+                        const [res1, res2] = await Promise.all([
+                          fetch('/api/users/bulk-balance', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ updates })
+                          }),
+                          fetch('/api/employees/bulk', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({ employees: updates })
+                          })
+                        ]);
+                        const data = await res1.json();
                         setBalanceUploadResult(data);
-                        const usersRes = await fetch('/api/users');
+                        const [usersRes, empRes] = await Promise.all([fetch('/api/users'), fetch('/api/employees')]);
                         setAvailableUsers(await usersRes.json());
+                        setEmployees(await empRes.json());
                       } catch(err) {
                         setBalanceUploadResult({ error: 'Upload failed' });
                       }
@@ -2563,16 +2582,22 @@ export default function App() {
                         }));
                       }}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                      placeholder="Ekteb matricule wela esem..."
+                      placeholder="Enter matricule or full name..."
                       autoComplete="off"
                     />
-                    {/* Dropdown suggestions */}
+                    {/* Dropdown suggestions — from employees roster */}
                     {formData.employeeMatricule && !formData.employeeName && (() => {
                       const q = formData.employeeMatricule.toLowerCase();
-                      const suggestions = availableUsers.filter(u =>
-                        (u.matricule || '').toLowerCase().includes(q) ||
-                        u.name.toLowerCase().includes(q)
-                      ).slice(0, 6);
+                      // Merge employees + users, employees first
+                      const empSuggestions = employees.filter(e =>
+                        e.matricule.toLowerCase().includes(q) ||
+                        e.name.toLowerCase().includes(q)
+                      ).map(e => ({ id: e.id, matricule: e.matricule, name: e.name, balance: e.balance }));
+                      const userSuggestions = availableUsers.filter(u =>
+                        ((u.matricule || '').toLowerCase().includes(q) || u.name.toLowerCase().includes(q)) &&
+                        !empSuggestions.find(e => e.matricule === u.matricule)
+                      ).map(u => ({ id: u.id, matricule: u.matricule || '', name: u.name, balance: u.balance }));
+                      const suggestions = [...empSuggestions, ...userSuggestions].slice(0, 8);
                       return suggestions.length > 0 ? (
                         <div style={{position:'absolute', top:'100%', left:0, right:0, background:'white', border:'1px solid #e2e8f0', borderRadius:'12px', boxShadow:'0 8px 24px rgba(0,0,0,0.12)', zIndex:100, marginTop:'4px', overflow:'hidden'}}>
                           {suggestions.map(u => (
@@ -2603,7 +2628,7 @@ export default function App() {
 
                   {/* Selected employee badge */}
                   {formData.employeeName && (() => {
-                    const u = availableUsers.find(u => u.matricule === formData.employeeMatricule);
+                    const u = employees.find(e => e.matricule === formData.employeeMatricule) || availableUsers.find(u => u.matricule === formData.employeeMatricule);
                     return (
                       <div style={{display:'flex', alignItems:'center', gap:'10px', background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:'12px', padding:'12px 16px'}}>
                         <div style={{width:'36px', height:'36px', borderRadius:'50%', background:'#4f46e5', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:'14px', flexShrink:0}}>
