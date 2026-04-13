@@ -491,13 +491,25 @@ export default function App() {
       return;
     }
 
-    // Validation 2: start date >= today
+    // Validation 2: department obligatoire
+    if (!formData.departmentId && !currentUser.department_id) {
+      setFormError('Please select a department.');
+      return;
+    }
+
+    // Validation 3: project obligatoire
+    if (!formData.project.trim()) {
+      setFormError('Please provide a project / service name.');
+      return;
+    }
+
+    // Validation 4: start date >= today
     if (start < today) {
       setFormError('Start date cannot be in the past. Please select today or a future date.');
       return;
     }
 
-    // Validation 3: end >= start
+    // Validation 5: end >= start
     if (end < start) {
       setFormError('End date cannot be before start date.');
       return;
