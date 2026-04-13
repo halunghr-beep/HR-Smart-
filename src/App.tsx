@@ -178,6 +178,7 @@ export default function App() {
   const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
   const [calendarFilter, setCalendarFilter] = useState({ departmentId: '' });
   const [showNewRequestModal, setShowNewRequestModal] = useState(false);
+  const [formError, setFormError] = useState<string>('');
   const [showNewDocModal, setShowNewDocModal] = useState(false);
   const [showNewUserModal, setShowNewUserModal] = useState(false);
   const [showNewDeptModal, setShowNewDeptModal] = useState(false);
@@ -477,9 +478,31 @@ export default function App() {
   const handleSubmitRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
+    setFormError('');
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const start = new Date(formData.startDate);
     const end = new Date(formData.endDate);
+
+    // Validation 1: reason obligatoire
+    if (!formData.reason.trim()) {
+      setFormError('Please provide a reason for the leave request.');
+      return;
+    }
+
+    // Validation 2: start date >= today
+    if (start < today) {
+      setFormError('Start date cannot be in the past. Please select today or a future date.');
+      return;
+    }
+
+    // Validation 3: end >= start
+    if (end < start) {
+      setFormError('End date cannot be before start date.');
+      return;
+    }
+
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
@@ -505,6 +528,7 @@ export default function App() {
       if (res.ok) {
         setShowNewRequestModal(false);
         setFormData({ employeeName: '', employeeMatricule: '', type: 'paid', startDate: '', endDate: '', reason: '', targetManagerId: '', project: '', departmentId: '' });
+        setFormError('');
         triggerNotification('Request Submitted', 'Your leave request has been submitted successfully.', 'leave');
       } else {
         const data = await res.json();
@@ -2393,6 +2417,11 @@ export default function App() {
                 </div>
 
                 <form onSubmit={handleSubmitRequest} className="space-y-6">
+                  {formError && (
+                    <div style={{background:'#fef2f2', border:'1px solid #fecaca', borderRadius:'12px', padding:'12px 16px', color:'#dc2626', fontSize:'13px', fontWeight:500}}>
+                      ⚠️ {formError}
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-bold text-slate-700 mb-2">Employee Name</label>
