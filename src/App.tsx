@@ -164,7 +164,9 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('hr_onboarding_done');
   });
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'structure' | 'calendar' | 'hr-overview' | 'ceo-overview' | 'documents'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'structure' | 'calendar' | 'hr-overview' | 'ceo-overview' | 'documents' | 'balance-upload'>('dashboard');
+  const [balanceUploadResult, setBalanceUploadResult] = useState<any>(null);
+  const [balanceUploading, setBalanceUploading] = useState(false);
   const [dashboardFilter, setDashboardFilter] = useState({
     status: 'all',
     departmentId: 'all',
@@ -1028,6 +1030,16 @@ export default function App() {
                 >
                   <Users className="w-5 h-5" />
                   Users
+                </button>
+                <button 
+                  onClick={() => setActiveTab('balance-upload')}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors",
+                    activeTab === 'balance-upload' ? "bg-indigo-50 text-indigo-700" : "text-slate-600 hover:bg-slate-50"
+                  )}
+                >
+                  <Download className="w-5 h-5" />
+                  Balance Upload
                 </button>
                 <button 
                   onClick={() => setActiveTab('structure')}
@@ -2180,6 +2192,89 @@ export default function App() {
                 ))}
               </div>
             </div>
+          ) : activeTab === 'balance-upload' ? (
+            <div className="p-8 max-w-2xl mx-auto space-y-6">
+              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
+                <h3 className="text-lg font-bold text-slate-900 mb-2">Monthly Balance Upload</h3>
+                <p className="text-sm text-slate-500 mb-6">Upload a CSV file with columns: <code className="bg-slate-100 px-2 py-0.5 rounded text-xs">matricule,balance</code> — ydir merge/update automatiquement</p>
+
+                <div style={{background:'#f8fafc', border:'2px dashed #e2e8f0', borderRadius:'16px', padding:'32px', textAlign:'center', marginBottom:'24px'}}>
+                  <div style={{fontSize:'32px', marginBottom:'8px'}}>📁</div>
+                  <p style={{fontSize:'13px', color:'#64748b', marginBottom:'16px'}}>Upload CSV file (matricule, balance)</p>
+                  <input
+                    type="file"
+                    accept=".csv"
+                    style={{display:'none'}}
+                    id="csv-upload"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setBalanceUploading(true);
+                      setBalanceUploadResult(null);
+                      const text = await file.text();
+                      const lines = text.trim().split('\n').slice(1); // skip header
+                      const updates: {matricule: string, balance: number}[] = [];
+                      for (const line of lines) {
+                        const [mat, bal] = line.split(',').map(s => s.trim());
+                        if (mat && !isNaN(Number(bal))) updates.push({ matricule: mat, balance: parseInt(bal) });
+                      }
+                      try {
+                        const res = await fetch('/api/users/bulk-balance', {
+                          method: 'POST',
+                          headers: {'Content-Type': 'application/json'},
+                          body: JSON.stringify({ updates })
+                        });
+                        const data = await res.json();
+                        setBalanceUploadResult(data);
+                        const usersRes = await fetch('/api/users');
+                        setAvailableUsers(await usersRes.json());
+                      } catch(err) {
+                        setBalanceUploadResult({ error: 'Upload failed' });
+                      }
+                      setBalanceUploading(false);
+                      e.target.value = '';
+                    }}
+                  />
+                  <label htmlFor="csv-upload" style={{cursor:'pointer', background:'#4f46e5', color:'white', borderRadius:'12px', padding:'10px 24px', fontSize:'13px', fontWeight:700, display:'inline-block'}}>
+                    {balanceUploading ? 'Processing...' : 'Choose CSV File'}
+                  </label>
+                </div>
+
+                {/* Result */}
+                {balanceUploadResult && (
+                  <div style={{background: balanceUploadResult.error ? '#fef2f2' : '#f0fdf4', border: `1px solid ${balanceUploadResult.error ? '#fecaca' : '#bbf7d0'}`, borderRadius:'12px', padding:'16px'}}>
+                    {balanceUploadResult.error ? (
+                      <p style={{color:'#dc2626', fontWeight:600}}>❌ {balanceUploadResult.error}</p>
+                    ) : (
+                      <>
+                        <p style={{color:'#166534', fontWeight:700, marginBottom:'8px'}}>✅ Upload successful!</p>
+                        <p style={{color:'#166534', fontSize:'13px'}}>Updated: {balanceUploadResult.updated} employees</p>
+                        {balanceUploadResult.notFound?.length > 0 && (
+                          <p style={{color:'#dc2626', fontSize:'12px', marginTop:'4px'}}>Not found: {balanceUploadResult.notFound.join(', ')}</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* CSV Template download */}
+                <div style={{marginTop:'24px', padding:'16px', background:'#f8fafc', borderRadius:'12px'}}>
+                  <p style={{fontSize:'13px', fontWeight:600, color:'#475569', marginBottom:'8px'}}>📥 CSV Template format:</p>
+                  <code style={{fontSize:'12px', color:'#334155', display:'block', whiteSpace:'pre'}}>{'matricule,balance\n1182,25\n2024-001,30\nCEO-001,25'}</code>
+                  <button
+                    onClick={() => {
+                      const csv = 'matricule,balance\n' + availableUsers.map(u => `${u.matricule || ''},${u.balance}`).join('\n');
+                      const blob = new Blob([csv], {type:'text/csv'});
+                      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+                      a.download = `balances_${new Date().toISOString().slice(0,7)}.csv`; a.click();
+                    }}
+                    style={{marginTop:'12px', fontSize:'12px', background:'white', border:'1px solid #e2e8f0', borderRadius:'8px', padding:'6px 14px', cursor:'pointer', color:'#4f46e5', fontWeight:600}}
+                  >
+                    ⬇ Export current balances as CSV
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : activeTab === 'structure' ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Departments Section */}
@@ -2452,12 +2547,32 @@ export default function App() {
                         type="text" 
                         required
                         value={formData.employeeMatricule}
-                        onChange={e => setFormData(prev => ({ ...prev, employeeMatricule: e.target.value }))}
+                        onChange={e => {
+                          const mat = e.target.value;
+                          const found = availableUsers.find(u => u.matricule === mat);
+                          setFormData(prev => ({
+                            ...prev,
+                            employeeMatricule: mat,
+                            employeeName: found ? found.name : prev.employeeName,
+                          }));
+                        }}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                         placeholder="Ex: 2024-001"
                       />
                     </div>
                   </div>
+                  {/* Balance badge */}
+                  {formData.employeeMatricule && (() => {
+                    const u = availableUsers.find(u => u.matricule === formData.employeeMatricule);
+                    return u ? (
+                      <div style={{display:'flex', alignItems:'center', gap:'8px', background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:'12px', padding:'10px 14px'}}>
+                        <span style={{fontSize:'13px', color:'#166534', fontWeight:600}}>{u.name}</span>
+                        <span style={{marginLeft:'auto', fontSize:'12px', background:'#dcfce7', color:'#166534', borderRadius:'8px', padding:'2px 10px', fontWeight:700}}>
+                          Balance: {u.balance} days
+                        </span>
+                      </div>
+                    ) : null;
+                  })()}
 {(currentUser?.role === 'hr' || currentUser?.role === 'superior' || currentUser?.role === 'manager') && (
   <div className="grid grid-cols-2 gap-4">
     <div>
