@@ -2215,9 +2215,25 @@ export default function App() {
                       const lines = text.trim().split('\n').slice(1); // skip header
                       const updates: {matricule: string, name: string, balance: number}[] = [];
                       for (const line of lines) {
+                        if (!line.trim()) continue;
                         const parts = line.split(',').map((s: string) => s.trim());
-                        const [mat, name, bal] = parts;
-                        if (mat && !isNaN(Number(bal))) updates.push({ matricule: mat, name: name || '', balance: parseInt(bal) });
+                        // Format: matricule, name, integer_part, decimal_part (virgule = séparateur décimal)
+                        // OR: matricule, name, balance (no decimal)
+                        const mat = parts[0];
+                        // name can have multiple words — find where numbers start
+                        // parts[1] = name, parts[2] = integer part, parts[3] = decimal part (optional)
+                        const name = parts[1] || '';
+                        let balance = 0;
+                        if (parts.length >= 4 && !isNaN(Number(parts[2])) && !isNaN(Number(parts[3]))) {
+                          // European decimal: "10,733" split into ["10","733"]
+                          const sign = parts[2].startsWith('-') ? -1 : 1;
+                          const intPart = Math.abs(parseInt(parts[2]));
+                          balance = sign * Math.round(intPart + parseFloat('0.' + parts[3]));
+                        } else if (parts.length >= 3 && !isNaN(Number(parts[2]))) {
+                          // Simple integer balance
+                          balance = Math.round(parseFloat(parts[2]));
+                        }
+                        if (mat && !isNaN(balance)) updates.push({ matricule: mat, name: name, balance });
                       }
                       try {
                         const res = await fetch('/api/users/bulk-balance', {
