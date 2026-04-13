@@ -2547,49 +2547,79 @@ export default function App() {
                       ⚠️ {formError}
                     </div>
                   )}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Employee Name</label>
-                      <input 
-                        type="text" 
-                        required
-                        value={formData.employeeName}
-                        onChange={e => setFormData(prev => ({ ...prev, employeeName: e.target.value }))}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                        placeholder="Ex: John Doe"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Employee ID</label>
-                      <input 
-                        type="text" 
-                        required
-                        value={formData.employeeMatricule}
-                        onChange={e => {
-                          const mat = e.target.value;
-                          const found = availableUsers.find(u => u.matricule === mat);
-                          setFormData(prev => ({
-                            ...prev,
-                            employeeMatricule: mat,
-                            employeeName: found ? found.name : prev.employeeName,
-                          }));
-                        }}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
-                        placeholder="Ex: 2024-001"
-                      />
-                    </div>
+                  {/* Employee Search — autocomplete by matricule or name */}
+                  <div style={{position:'relative'}}>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Employee ID / Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.employeeMatricule || formData.employeeName}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setFormData(prev => ({
+                          ...prev,
+                          employeeMatricule: val,
+                          employeeName: '',
+                        }));
+                      }}
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                      placeholder="Ekteb matricule wela esem..."
+                      autoComplete="off"
+                    />
+                    {/* Dropdown suggestions */}
+                    {formData.employeeMatricule && !formData.employeeName && (() => {
+                      const q = formData.employeeMatricule.toLowerCase();
+                      const suggestions = availableUsers.filter(u =>
+                        (u.matricule || '').toLowerCase().includes(q) ||
+                        u.name.toLowerCase().includes(q)
+                      ).slice(0, 6);
+                      return suggestions.length > 0 ? (
+                        <div style={{position:'absolute', top:'100%', left:0, right:0, background:'white', border:'1px solid #e2e8f0', borderRadius:'12px', boxShadow:'0 8px 24px rgba(0,0,0,0.12)', zIndex:100, marginTop:'4px', overflow:'hidden'}}>
+                          {suggestions.map(u => (
+                            <div
+                              key={u.id}
+                              onClick={() => setFormData(prev => ({
+                                ...prev,
+                                employeeMatricule: u.matricule || '',
+                                employeeName: u.name,
+                              }))}
+                              style={{display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 14px', cursor:'pointer', borderBottom:'0.5px solid #f1f5f9'}}
+                              onMouseEnter={e => (e.currentTarget.style.background='#f8fafc')}
+                              onMouseLeave={e => (e.currentTarget.style.background='white')}
+                            >
+                              <div>
+                                <div style={{fontSize:'13px', fontWeight:600, color:'#0f172a'}}>{u.name}</div>
+                                <div style={{fontSize:'11px', color:'#94a3b8'}}>#{u.matricule}</div>
+                              </div>
+                              <div style={{fontSize:'12px', background:'#dcfce7', color:'#166534', borderRadius:'8px', padding:'2px 10px', fontWeight:700}}>
+                                {u.balance} days
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
-                  {/* Balance badge */}
-                  {formData.employeeMatricule && (() => {
+
+                  {/* Selected employee badge */}
+                  {formData.employeeName && (() => {
                     const u = availableUsers.find(u => u.matricule === formData.employeeMatricule);
-                    return u ? (
-                      <div style={{display:'flex', alignItems:'center', gap:'8px', background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:'12px', padding:'10px 14px'}}>
-                        <span style={{fontSize:'13px', color:'#166534', fontWeight:600}}>{u.name}</span>
-                        <span style={{marginLeft:'auto', fontSize:'12px', background:'#dcfce7', color:'#166534', borderRadius:'8px', padding:'2px 10px', fontWeight:700}}>
-                          Balance: {u.balance} days
-                        </span>
+                    return (
+                      <div style={{display:'flex', alignItems:'center', gap:'10px', background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:'12px', padding:'12px 16px'}}>
+                        <div style={{width:'36px', height:'36px', borderRadius:'50%', background:'#4f46e5', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:'14px', flexShrink:0}}>
+                          {formData.employeeName.charAt(0)}
+                        </div>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:'14px', fontWeight:700, color:'#166534'}}>{formData.employeeName}</div>
+                          <div style={{fontSize:'11px', color:'#4ade80'}}>#{formData.employeeMatricule}</div>
+                        </div>
+                        <div style={{textAlign:'right'}}>
+                          <div style={{fontSize:'18px', fontWeight:800, color:'#166534'}}>{u?.balance ?? '?'}</div>
+                          <div style={{fontSize:'10px', color:'#4ade80', fontWeight:600}}>days left</div>
+                        </div>
+                        <button type="button" onClick={() => setFormData(prev => ({...prev, employeeMatricule:'', employeeName:''}))} style={{background:'none', border:'none', color:'#94a3b8', cursor:'pointer', fontSize:'16px', padding:'0 4px'}}>✕</button>
                       </div>
-                    ) : null;
+                    );
                   })()}
 {(currentUser?.role === 'hr' || currentUser?.role === 'superior' || currentUser?.role === 'manager') && (
   <div className="grid grid-cols-2 gap-4">
