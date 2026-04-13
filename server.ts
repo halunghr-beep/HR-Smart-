@@ -391,6 +391,30 @@ async function startServer() {
     } catch (error: any) { res.status(500).json({ error: error.message }); }
   });
 
+  // ── BULK BALANCE UPDATE ──
+  app.post("/api/users/bulk-balance", async (req, res) => {
+    try {
+      const { updates } = req.body as { updates: { matricule: string; name: string; balance: number }[] };
+      const notFound: string[] = [];
+      let updated = 0;
+
+      for (const { matricule, name, balance } of updates) {
+        const existing = await db.execute({ sql: "SELECT id FROM users WHERE matricule = ?", args: [matricule] });
+        if (existing.rows.length === 0) {
+          notFound.push(matricule);
+          continue;
+        }
+        await db.execute({
+          sql: "UPDATE users SET balance = ?, name = COALESCE(NULLIF(?, ''), name) WHERE matricule = ?",
+          args: [balance, name, matricule]
+        });
+        updated++;
+      }
+
+      res.json({ success: true, updated, notFound });
+    } catch (error: any) { res.status(500).json({ error: error.message }); }
+  });
+
   // ── STATIC ──
   const distPath = path.join(__dirname, "dist");
   app.use(express.static(distPath));
