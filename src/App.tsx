@@ -2196,11 +2196,11 @@ export default function App() {
             <div className="p-8 max-w-2xl mx-auto space-y-6">
               <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8">
                 <h3 className="text-lg font-bold text-slate-900 mb-2">Monthly Balance Upload</h3>
-                <p className="text-sm text-slate-500 mb-6">Upload a CSV file with columns: <code className="bg-slate-100 px-2 py-0.5 rounded text-xs">matricule,balance</code> — ydir merge/update automatiquement</p>
+                <p className="text-sm text-slate-500 mb-6">Upload a CSV file with columns: <code className="bg-slate-100 px-2 py-0.5 rounded text-xs">matricule,name,balance</code> — ydir merge/update automatiquement</p>
 
                 <div style={{background:'#f8fafc', border:'2px dashed #e2e8f0', borderRadius:'16px', padding:'32px', textAlign:'center', marginBottom:'24px'}}>
                   <div style={{fontSize:'32px', marginBottom:'8px'}}>📁</div>
-                  <p style={{fontSize:'13px', color:'#64748b', marginBottom:'16px'}}>Upload CSV file (matricule, balance)</p>
+                  <p style={{fontSize:'13px', color:'#64748b', marginBottom:'16px'}}>Upload CSV file (matricule, name, balance)</p>
                   <input
                     type="file"
                     accept=".csv"
@@ -2213,10 +2213,11 @@ export default function App() {
                       setBalanceUploadResult(null);
                       const text = await file.text();
                       const lines = text.trim().split('\n').slice(1); // skip header
-                      const updates: {matricule: string, balance: number}[] = [];
+                      const updates: {matricule: string, name: string, balance: number}[] = [];
                       for (const line of lines) {
-                        const [mat, bal] = line.split(',').map(s => s.trim());
-                        if (mat && !isNaN(Number(bal))) updates.push({ matricule: mat, balance: parseInt(bal) });
+                        const parts = line.split(',').map((s: string) => s.trim());
+                        const [mat, name, bal] = parts;
+                        if (mat && !isNaN(Number(bal))) updates.push({ matricule: mat, name: name || '', balance: parseInt(bal) });
                       }
                       try {
                         const res = await fetch('/api/users/bulk-balance', {
@@ -2260,10 +2261,10 @@ export default function App() {
                 {/* CSV Template download */}
                 <div style={{marginTop:'24px', padding:'16px', background:'#f8fafc', borderRadius:'12px'}}>
                   <p style={{fontSize:'13px', fontWeight:600, color:'#475569', marginBottom:'8px'}}>📥 CSV Template format:</p>
-                  <code style={{fontSize:'12px', color:'#334155', display:'block', whiteSpace:'pre'}}>{'matricule,balance\n1182,25\n2024-001,30\nCEO-001,25'}</code>
+                  <code style={{fontSize:'12px', color:'#334155', display:'block', whiteSpace:'pre'}}>{'matricule,name,balance\n1182,Firas Chebbi,25\n2024-001,John Doe,30\nCEO-001,Michael,25'}</code>
                   <button
                     onClick={() => {
-                      const csv = 'matricule,balance\n' + availableUsers.map(u => `${u.matricule || ''},${u.balance}`).join('\n');
+                      const csv = 'matricule,name,balance\n' + availableUsers.map(u => `${u.matricule || ''},${u.name || ''},${u.balance}`).join('\n');
                       const blob = new Blob([csv], {type:'text/csv'});
                       const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
                       a.download = `balances_${new Date().toISOString().slice(0,7)}.csv`; a.click();
