@@ -196,7 +196,40 @@ export default function App() {
   // In-app toast state
   const [toasts, setToasts] = useState<{id:number; title:string; body:string}[]>([]);
 
-  const playChime = () => {
+  const triggerNotification = async (title: string, body: string, _type: 'leave' | 'document') => {
+    // 1) In-app toast — toujours visible quand l'app est ouverte
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, title, body }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000);
+
+    // 2) Capacitor LocalNotifications — real Android/iOS banner + son système
+    try {
+      const { Capacitor } = await import('@capacitor/core');
+      if (Capacitor.isNativePlatform()) {
+        const { LocalNotifications } = await import('@capacitor/local-notifications');
+        const perm = await LocalNotifications.checkPermissions();
+        if (perm.display === 'granted') {
+          await LocalNotifications.schedule({
+            notifications: [{
+              id: Math.floor(Math.random() * 100000),
+              title,
+              body,
+              // Android uses default system sound when sound = 'default'
+              sound: 'default',
+              smallIcon: 'ic_stat_icon_config_sample',
+              iconColor: '#4f46e5',
+              actionTypeId: '',
+              extra: null,
+            }]
+          });
+        }
+        return; // Son géré par Android — stop ici
+      }
+    } catch(e) {
+      console.error('[Notif Capacitor]', e);
+    }
+
+    // 3) Web fallback — AudioContext chime + browser notification
     try {
       const ctx = new AudioContext();
       [0, 0.13, 0.26].forEach((delay, i) => {
@@ -210,45 +243,10 @@ export default function App() {
         o.start(ctx.currentTime + delay);
         o.stop(ctx.currentTime + delay + 0.5);
       });
-    } catch (e) {}
-  };
+    } catch(e) {}
 
-  const triggerNotification = async (title: string, body: string, _type: 'leave' | 'document') => {
-    playChime();
-
-    // 1) In-app toast — always visible when app is open
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, title, body }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 5000);
-
-    // 2) Real Android/iOS system notification via Capacitor
-    try {
-      const { Capacitor } = await import('@capacitor/core');
-      if (Capacitor.isNativePlatform()) {
-        const { LocalNotifications } = await import('@capacitor/local-notifications');
-        const perm = await LocalNotifications.checkPermissions();
-        if (perm.display === 'granted') {
-          await LocalNotifications.schedule({
-            notifications: [{
-              id: Math.floor(Math.random() * 100000),
-              title,
-              body,
-              smallIcon: 'ic_stat_icon_config_sample',
-              iconColor: '#4f46e5',
-              sound: undefined,
-              actionTypeId: '',
-              extra: null,
-            }]
-          });
-        }
-      } else {
-        // Web browser fallback
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification(title, { body, icon: '/icon-192.png' });
-        }
-      }
-    } catch(e) {
-      console.error('[Notif]', e);
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try { new Notification(title, { body, icon: '/icon-192.png' }); } catch(e) {}
     }
   };
 
