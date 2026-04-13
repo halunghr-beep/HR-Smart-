@@ -2212,28 +2212,29 @@ export default function App() {
                       setBalanceUploading(true);
                       setBalanceUploadResult(null);
                       const text = await file.text();
-                      const lines = text.trim().split('\n').slice(1); // skip header
+                      // Handle Windows \r\n + European decimal comma format
+                      const lines = text.replace(/\r/g, '').trim().split('\n').slice(1);
                       const updates: {matricule: string, name: string, balance: number}[] = [];
-                      for (const line of lines) {
-                        if (!line.trim()) continue;
+                      for (const rawLine of lines) {
+                        const line = rawLine.trim();
+                        if (!line) continue;
                         const parts = line.split(',').map((s: string) => s.trim());
-                        // Format: matricule, name, integer_part, decimal_part (virgule = séparateur décimal)
-                        // OR: matricule, name, balance (no decimal)
+                        if (parts.length < 3) continue;
                         const mat = parts[0];
-                        // name can have multiple words — find where numbers start
-                        // parts[1] = name, parts[2] = integer part, parts[3] = decimal part (optional)
                         const name = parts[1] || '';
                         let balance = 0;
-                        if (parts.length >= 4 && !isNaN(Number(parts[2])) && !isNaN(Number(parts[3]))) {
-                          // European decimal: "10,733" split into ["10","733"]
-                          const sign = parts[2].startsWith('-') ? -1 : 1;
-                          const intPart = Math.abs(parseInt(parts[2]));
-                          balance = sign * Math.round(intPart + parseFloat('0.' + parts[3]));
-                        } else if (parts.length >= 3 && !isNaN(Number(parts[2]))) {
-                          // Simple integer balance
-                          balance = Math.round(parseFloat(parts[2]));
+                        // Detect European decimal: 4 parts where parts[3] is digits only
+                        const p2 = parts[2] || '';
+                        const p3 = parts[3] || '';
+                        const isEuroDecimal = parts.length >= 4 && /^-?\d+$/.test(p2) && /^\d+$/.test(p3);
+                        if (isEuroDecimal) {
+                          const sign = p2.startsWith('-') ? -1 : 1;
+                          const intPart = Math.abs(parseInt(p2));
+                          balance = sign * Math.round(intPart + parseFloat('0.' + p3));
+                        } else if (/^-?\d*\.?\d+$/.test(p2)) {
+                          balance = Math.round(parseFloat(p2));
                         }
-                        if (mat && !isNaN(balance)) updates.push({ matricule: mat, name: name, balance });
+                        if (mat && name) updates.push({ matricule: mat, name, balance });
                       }
                       try {
                         const res = await fetch('/api/users/bulk-balance', {
